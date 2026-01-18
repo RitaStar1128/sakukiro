@@ -48,7 +48,7 @@ export default function HistoryPage() {
     const newRecords = records.filter((r) => r.id !== id);
     setRecords(newRecords);
     localStorage.setItem("kaimono_records", JSON.stringify(newRecords));
-    toast.success("削除しました");
+    toast.success(t("delete"));
   };
 
 
@@ -70,7 +70,7 @@ export default function HistoryPage() {
         >
           <ArrowLeft className="w-6 h-6" strokeWidth={2.5} />
         </Button>
-        <h1 className="text-lg font-black tracking-tighter uppercase">History</h1>
+        <h1 className="text-lg font-black tracking-tighter uppercase">{t("history")}</h1>
       </header>
 
       <main className="flex-1 max-w-md mx-auto w-full p-4">
@@ -84,8 +84,8 @@ export default function HistoryPage() {
             >
               <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5" strokeWidth={2.5} />
               <div className="flex-1 text-sm font-bold leading-tight">
-                <p className="mb-1">Caution: Data is saved locally.</p>
-                <p className="text-xs opacity-80 font-normal">Clearing browser cache/history will delete your records.</p>
+                <p className="mb-1">{t("warningTitle")}</p>
+                <p className="text-xs opacity-80 font-normal">{t("warningDesc")}</p>
               </div>
               <button 
                 onClick={dismissWarning}
@@ -100,7 +100,7 @@ export default function HistoryPage() {
         {records.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-[60vh] text-muted-foreground opacity-50">
             <ShoppingBag className="w-16 h-16 mb-4" strokeWidth={1.5} />
-            <p className="text-lg font-bold tracking-widest uppercase">No records</p>
+            <p className="text-lg font-bold tracking-widest uppercase">{t("noRecords")}</p>
           </div>
         ) : (
           <div className="flex flex-col gap-3 pb-8">

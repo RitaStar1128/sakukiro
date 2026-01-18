@@ -51,7 +51,7 @@ export default function HistoryPage() {
     const newRecords = records.filter((r) => r.id !== id);
     setRecords(newRecords);
     localStorage.setItem("kaimono_records", JSON.stringify(newRecords));
-    toast.success(t("delete"));
+    // toast.success(t("delete")); // 削除通知を廃止し、リストからの消失アニメーションのみとする
   };
 
 

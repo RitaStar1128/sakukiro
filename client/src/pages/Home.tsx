@@ -3,10 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useLocation } from "wouter";
-import { History, ShoppingBag, Delete, Check, X, Globe } from "lucide-react";
+import { History, ShoppingBag, Delete, Check, X } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useCurrency } from "@/contexts/CurrencyContext";
+import { SettingsModal } from "@/components/SettingsModal";
 
 // UX_RATIONALE:
 // - fitts_law: 画面下部（サムゾーン）に操作系を集約。テンキーと確定ボタンを画面の約50%〜60%の領域に拡大し、親指での誤タップを極限まで減らす。
@@ -25,7 +27,8 @@ const CATEGORY_KEYS = [
 ];
 
 export default function Home() {
-  const { t, language, toggleLanguage } = useLanguage();
+  const { t } = useLanguage();
+  const { getSymbol, config } = useCurrency();
   const [amount, setAmount] = useState("");
   const [categoryKey, setCategoryKey] = useState(CATEGORY_KEYS[0]);
   const [note, setNote] = useState("");
@@ -33,7 +36,24 @@ export default function Home() {
 
   // テンキー入力処理
   const handleNumClick = (num: string) => {
-    if (amount.length >= 7) return;
+    // 小数点入力の制御
+    if (num === ".") {
+      if (amount.includes(".")) return; // 既に小数点がある場合は無視
+      if (amount === "") {
+        setAmount("0."); // 空の場合は "0." とする
+        return;
+      }
+    }
+
+    // 小数点以下の桁数制限
+    if (amount.includes(".")) {
+      const parts = amount.split(".");
+      if (parts[1] && parts[1].length >= config.decimals) return;
+    }
+
+    // 整数部の桁数制限（適当な上限）
+    if (!amount.includes(".") && amount.length >= 9) return;
+
     setAmount((prev) => prev + num);
   };
 
@@ -46,17 +66,18 @@ export default function Home() {
   };
 
   const handleSubmit = () => {
-    if (!amount) {
+    if (!amount || parseFloat(amount) === 0) {
       toast.error(t("inputAmount"));
       return;
     }
 
     const newRecord = {
       id: crypto.randomUUID(),
-      amount: parseInt(amount, 10),
+      amount: parseFloat(amount),
       categoryKey, // Save the key, not the translated string
       note,
       date: new Date().toISOString(),
+      currency: config.code, // 記録時の通貨を保存
     };
 
     const storedData = localStorage.getItem("kaimono_records");
@@ -85,24 +106,19 @@ export default function Home() {
             </div>
             <h1 className="text-lg font-black tracking-tighter uppercase">Kaimono</h1>
           </div>
-          
-          {/* Language Toggle - Placed near title, far from history button */}
-          <button
-            onClick={toggleLanguage}
-            className="text-xs font-bold border-2 border-black dark:border-white px-1.5 py-0.5 hover:bg-accent active:translate-y-[1px] transition-all ml-1"
-          >
-            {language === "ja" ? "EN" : "JP"}
-          </button>
         </div>
 
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          onClick={() => setLocation("/history")}
-          className="w-10 h-10 rounded-none border-2 border-transparent hover:border-black dark:hover:border-white hover:bg-accent hover:text-accent-foreground transition-all active:translate-y-1"
-        >
-          <History className="w-6 h-6" strokeWidth={2.5} />
-        </Button>
+        <div className="flex items-center gap-2">
+          <SettingsModal />
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={() => setLocation("/history")}
+            className="w-10 h-10 rounded-none border-2 border-transparent hover:border-black dark:hover:border-white hover:bg-accent hover:text-accent-foreground transition-all active:translate-y-1"
+          >
+            <History className="w-6 h-6" strokeWidth={2.5} />
+          </Button>
+        </div>
       </header>
 
       <main className="flex-1 flex flex-col w-full max-w-md mx-auto relative">
@@ -117,12 +133,22 @@ export default function Home() {
               key={amount}
               initial={{ scale: 0.98 }}
               animate={{ scale: 1 }}
-              className="neo-input h-24 flex items-end justify-end text-6xl tracking-tighter overflow-hidden bg-white dark:bg-black transition-all group-focus-within:shadow-[6px_6px_0px_0px_var(--color-safety-orange)]"
+              className="neo-input h-24 flex items-end justify-end text-6xl tracking-tighter overflow-hidden bg-white dark:bg-black transition-all group-focus-within:shadow-[6px_6px_0px_0px_var(--color-safety-orange)] pr-14 relative"
             >
-              <span className="text-3xl mr-2 self-end mb-2 font-bold text-muted-foreground">¥</span>
+              <span className="text-3xl mr-2 self-end mb-2 font-bold text-muted-foreground">{getSymbol()}</span>
               <span className={amount ? "text-foreground" : "text-muted-foreground/20"}>
                 {amount || "0"}
               </span>
+              
+              {/* Clear Button inside Display */}
+              {amount && (
+                <button 
+                  onClick={handleClear}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <X className="w-6 h-6" strokeWidth={3} />
+                </button>
+              )}
             </motion.div>
           </div>
 
@@ -171,10 +197,11 @@ export default function Home() {
             
             {/* Bottom Row of Keypad */}
             <button
-              onClick={handleClear}
-              className="neo-btn bg-muted text-muted-foreground text-xl hover:bg-muted/80 active:translate-y-[2px] active:translate-x-[2px] active:shadow-none flex items-center justify-center rounded-sm"
+              onClick={() => handleNumClick(".")}
+              className="neo-btn bg-white dark:bg-black text-3xl hover:bg-gray-50 dark:hover:bg-gray-900 active:translate-y-[2px] active:translate-x-[2px] active:shadow-none flex items-center justify-center rounded-sm pb-2"
+              disabled={config.decimals === 0} // 小数点なし通貨の場合は無効化
             >
-              <span className="font-black">AC</span>
+              <span className="font-black">.</span>
             </button>
             <button
               onClick={() => handleNumClick("0")}

@@ -35,6 +35,7 @@ const translations: Translations = {
 
 interface LanguageContextType {
   language: Language;
+  setLanguage: (lang: Language) => void;
   toggleLanguage: () => void;
   t: (key: string) => string;
   formatDate: (isoString: string) => string;
@@ -56,10 +57,14 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  const updateLanguage = (lang: Language) => {
+    setLanguage(lang);
+    localStorage.setItem("kaimono_language", lang);
+  };
+
   const toggleLanguage = () => {
     const newLang = language === "ja" ? "en" : "ja";
-    setLanguage(newLang);
-    localStorage.setItem("kaimono_language", newLang);
+    updateLanguage(newLang);
   };
 
   const t = (key: string) => {
@@ -86,7 +91,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <LanguageContext.Provider value={{ language, toggleLanguage, t, formatDate }}>
+    <LanguageContext.Provider value={{ language, setLanguage: updateLanguage, toggleLanguage, t, formatDate }}>
       {children}
     </LanguageContext.Provider>
   );

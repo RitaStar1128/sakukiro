@@ -5,6 +5,7 @@ import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { LanguageProvider } from "./contexts/LanguageContext";
+import { CurrencyProvider } from "./contexts/CurrencyContext";
 import Home from "./pages/Home";
 import HistoryPage from "./pages/History";
 
@@ -34,10 +35,12 @@ function App() {
         // switchable
       >
         <LanguageProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Router />
-          </TooltipProvider>
+          <CurrencyProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Router />
+            </TooltipProvider>
+          </CurrencyProvider>
         </LanguageProvider>
       </ThemeProvider>
     </ErrorBoundary>

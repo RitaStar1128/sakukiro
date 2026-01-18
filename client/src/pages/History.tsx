@@ -5,6 +5,7 @@ import { ArrowLeft, Trash2, ShoppingBag, AlertTriangle, X } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useCurrency, CurrencyCode } from "@/contexts/CurrencyContext";
 
 // UX_RATIONALE:
 // - serial_position_effect: リスト表示において、最新のアイテム（上部）を強調。
@@ -18,10 +19,12 @@ interface Record {
   category?: string;
   note: string;
   date: string;
+  currency?: CurrencyCode;
 }
 
 export default function HistoryPage() {
   const { t, formatDate } = useLanguage();
+  const { availableCurrencies, config } = useCurrency();
   const [records, setRecords] = useState<Record[]>([]);
   const [showWarning, setShowWarning] = useState(false);
   const [_, setLocation] = useLocation();
@@ -117,7 +120,18 @@ export default function HistoryPage() {
                   <div className="flex flex-col gap-1 overflow-hidden">
                     <div className="flex items-baseline gap-2">
                       <span className="text-2xl font-black tracking-tighter">
-                        ¥{record.amount.toLocaleString()}
+                        {(() => {
+                          // Use record's currency if available, otherwise fallback to current config or default
+                          const currencyCode = record.currency || "JPY";
+                          const currencyConfig = availableCurrencies[currencyCode] || availableCurrencies["JPY"];
+                          
+                          return new Intl.NumberFormat(undefined, {
+                            style: "currency",
+                            currency: currencyCode,
+                            minimumFractionDigits: currencyConfig.decimals,
+                            maximumFractionDigits: currencyConfig.decimals,
+                          }).format(record.amount);
+                        })()}
                       </span>
                       <span className="text-[10px] font-black uppercase bg-primary text-primary-foreground px-1.5 py-0.5 border border-black dark:border-white">
                         {record.categoryKey ? t(record.categoryKey) : record.category}

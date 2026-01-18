@@ -3,9 +3,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useLocation } from "wouter";
-import { History, ShoppingBag, Delete, Check, X } from "lucide-react";
+import { History, ShoppingBag, Delete, Check, X, Globe } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 // UX_RATIONALE:
 // - fitts_law: 画面下部（サムゾーン）に操作系を集約。テンキーと確定ボタンを画面の約50%〜60%の領域に拡大し、親指での誤タップを極限まで減らす。
@@ -13,19 +14,20 @@ import { motion, AnimatePresence } from "framer-motion";
 // - miller_law: 画面上の情報量を「金額」「カテゴリ」「備考」の3つに絞り、認知負荷を下げる。
 // - peak_end_rule: 入力完了時のアニメーションと触覚的なフィードバック（視覚的）を強化し、記録完了の快感を提供する。
 
-const CATEGORIES = [
-  "食費",
-  "日用品",
-  "交通費",
-  "娯楽",
-  "衣服",
-  "医療",
-  "その他"
+const CATEGORY_KEYS = [
+  "cat_food",
+  "cat_daily",
+  "cat_transport",
+  "cat_entertainment",
+  "cat_clothing",
+  "cat_medical",
+  "cat_other"
 ];
 
 export default function Home() {
+  const { t, language, toggleLanguage } = useLanguage();
   const [amount, setAmount] = useState("");
-  const [category, setCategory] = useState(CATEGORIES[0]);
+  const [categoryKey, setCategoryKey] = useState(CATEGORY_KEYS[0]);
   const [note, setNote] = useState("");
   const [_, setLocation] = useLocation();
 
@@ -45,14 +47,14 @@ export default function Home() {
 
   const handleSubmit = () => {
     if (!amount) {
-      toast.error("金額を入力してください");
+      toast.error(t("inputAmount"));
       return;
     }
 
     const newRecord = {
       id: crypto.randomUUID(),
       amount: parseInt(amount, 10),
-      category,
+      categoryKey, // Save the key, not the translated string
       note,
       date: new Date().toISOString(),
     };
@@ -61,7 +63,7 @@ export default function Home() {
     const records = storedData ? JSON.parse(storedData) : [];
     localStorage.setItem("kaimono_records", JSON.stringify([newRecord, ...records]));
 
-    toast.success("記録しました！");
+    toast.success(t("saved"));
     
     setAmount("");
     setNote("");
@@ -76,12 +78,23 @@ export default function Home() {
     >
       {/* Header - Minimal & Accessible */}
       <header className="flex justify-between items-center px-4 py-3 border-b-2 border-black dark:border-white bg-white dark:bg-black shrink-0 z-20">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-primary flex items-center justify-center border-2 border-black dark:border-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)]">
-            <ShoppingBag className="w-4 h-4 text-primary-foreground" strokeWidth={3} />
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-primary flex items-center justify-center border-2 border-black dark:border-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)]">
+              <ShoppingBag className="w-4 h-4 text-primary-foreground" strokeWidth={3} />
+            </div>
+            <h1 className="text-lg font-black tracking-tighter uppercase">Kaimono</h1>
           </div>
-          <h1 className="text-lg font-black tracking-tighter uppercase">Kaimono</h1>
+          
+          {/* Language Toggle - Placed near title, far from history button */}
+          <button
+            onClick={toggleLanguage}
+            className="text-xs font-bold border-2 border-black dark:border-white px-1.5 py-0.5 hover:bg-accent active:translate-y-[1px] transition-all ml-1"
+          >
+            {language === "ja" ? "EN" : "JP"}
+          </button>
         </div>
+
         <Button 
           variant="ghost" 
           size="icon" 
@@ -98,7 +111,7 @@ export default function Home() {
           {/* Amount Display - The Hero */}
           <div className="relative group">
             <div className="absolute top-2 left-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground pointer-events-none">
-              Amount
+              {t("amount")}
             </div>
             <motion.div 
               key={amount}
@@ -116,26 +129,26 @@ export default function Home() {
           {/* Secondary Inputs - Compact Row */}
           <div className="grid grid-cols-[1.2fr_1.8fr] gap-3">
             <div className="flex flex-col gap-1">
-              <label className="text-[10px] font-black uppercase tracking-widest pl-1">Category</label>
-              <Select value={category} onValueChange={setCategory}>
+              <label className="text-[10px] font-black uppercase tracking-widest pl-1">{t("category")}</label>
+              <Select value={categoryKey} onValueChange={setCategoryKey}>
                 <SelectTrigger className="neo-input h-12 w-full text-sm px-3 py-0 border-2 shadow-none focus:shadow-[2px_2px_0px_0px_var(--color-safety-orange)]">
-                  <SelectValue placeholder="Category" />
+                  <SelectValue placeholder={t("category")} />
                 </SelectTrigger>
                 <SelectContent className="border-2 border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] max-h-[40vh]">
-                  {CATEGORIES.map((cat) => (
-                    <SelectItem key={cat} value={cat} className="font-bold py-3 cursor-pointer focus:bg-accent focus:text-accent-foreground">
-                      {cat}
+                  {CATEGORY_KEYS.map((key) => (
+                    <SelectItem key={key} value={key} className="font-bold py-3 cursor-pointer focus:bg-accent focus:text-accent-foreground">
+                      {t(key)}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="flex flex-col gap-1">
-              <label className="text-[10px] font-black uppercase tracking-widest pl-1">Note</label>
+              <label className="text-[10px] font-black uppercase tracking-widest pl-1">{t("note")}</label>
               <Input 
                 value={note} 
                 onChange={(e) => setNote(e.target.value)} 
-                placeholder="Store, item..." 
+                placeholder={t("notePlaceholder")} 
                 className="neo-input h-12 text-sm px-3 py-0 border-2 shadow-none focus:shadow-[2px_2px_0px_0px_var(--color-safety-orange)] placeholder:text-muted-foreground/40"
               />
             </div>
@@ -183,7 +196,7 @@ export default function Home() {
             onClick={handleSubmit}
             className="h-20 shrink-0 text-2xl font-black uppercase tracking-[0.2em] border-2 border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] transition-all bg-primary text-primary-foreground hover:bg-primary hover:brightness-110 w-full rounded-sm flex items-center justify-center gap-3"
           >
-            Confirm <Check className="w-8 h-8" strokeWidth={4} />
+            {t("confirm")} <Check className="w-8 h-8" strokeWidth={4} />
           </motion.button>
         </div>
       </main>

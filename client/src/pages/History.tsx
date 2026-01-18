@@ -4,6 +4,7 @@ import { useLocation } from "wouter";
 import { ArrowLeft, Trash2, ShoppingBag, AlertTriangle, X } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 // UX_RATIONALE:
 // - serial_position_effect: リスト表示において、最新のアイテム（上部）を強調。
@@ -13,12 +14,14 @@ import { motion, AnimatePresence } from "framer-motion";
 interface Record {
   id: string;
   amount: number;
-  category: string;
+  categoryKey?: string;
+  category?: string;
   note: string;
   date: string;
 }
 
 export default function HistoryPage() {
+  const { t, formatDate } = useLanguage();
   const [records, setRecords] = useState<Record[]>([]);
   const [showWarning, setShowWarning] = useState(false);
   const [_, setLocation] = useLocation();
@@ -48,15 +51,7 @@ export default function HistoryPage() {
     toast.success("削除しました");
   };
 
-  const formatDate = (isoString: string) => {
-    const date = new Date(isoString);
-    return new Intl.DateTimeFormat("ja-JP", {
-      month: "numeric",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    }).format(date);
-  };
+
 
   return (
     <motion.div 
@@ -125,7 +120,7 @@ export default function HistoryPage() {
                         ¥{record.amount.toLocaleString()}
                       </span>
                       <span className="text-[10px] font-black uppercase bg-primary text-primary-foreground px-1.5 py-0.5 border border-black dark:border-white">
-                        {record.category}
+                        {record.categoryKey ? t(record.categoryKey) : record.category}
                       </span>
                     </div>
                     <div className="flex flex-col">

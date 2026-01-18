@@ -32,6 +32,7 @@ export default function Home() {
   const [amount, setAmount] = useState("");
   const [categoryKey, setCategoryKey] = useState(CATEGORY_KEYS[0]);
   const [note, setNote] = useState("");
+  const [isSaved, setIsSaved] = useState(false);
   const [_, setLocation] = useLocation();
 
   // テンキー入力処理
@@ -84,7 +85,9 @@ export default function Home() {
     const records = storedData ? JSON.parse(storedData) : [];
     localStorage.setItem("kaimono_records", JSON.stringify([newRecord, ...records]));
 
-    toast.success(t("saved"));
+    // ボタン内フィードバックを表示
+    setIsSaved(true);
+    setTimeout(() => setIsSaved(false), 1000);
     
     setAmount("");
     setNote("");
@@ -225,9 +228,22 @@ export default function Home() {
           <motion.button 
             whileTap={{ scale: 0.98, y: 4, x: 4, boxShadow: "0px 0px 0px 0px rgba(0,0,0,0)" }}
             onClick={handleSubmit}
-            className="h-20 shrink-0 text-2xl font-black uppercase tracking-[0.2em] border-2 border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] transition-all bg-primary text-primary-foreground hover:bg-primary hover:brightness-110 w-full rounded-sm flex items-center justify-center gap-3"
+            disabled={isSaved}
+            className={`h-20 shrink-0 text-2xl font-black uppercase tracking-[0.2em] border-2 border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] transition-all w-full rounded-sm flex items-center justify-center gap-3 ${
+              isSaved 
+                ? "bg-green-500 text-white border-green-700" 
+                : "bg-primary text-primary-foreground hover:bg-primary hover:brightness-110"
+            }`}
           >
-            {t("confirm")} <Check className="w-8 h-8" strokeWidth={4} />
+            {isSaved ? (
+              <>
+                {t("saved")}! <Check className="w-8 h-8" strokeWidth={4} />
+              </>
+            ) : (
+              <>
+                {t("confirm")} <Check className="w-8 h-8" strokeWidth={4} />
+              </>
+            )}
           </motion.button>
         </div>
       </main>

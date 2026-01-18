@@ -37,7 +37,7 @@ function App() {
         <LanguageProvider>
           <CurrencyProvider>
             <TooltipProvider>
-              <Toaster />
+              <Toaster position="top-center" />
               <Router />
             </TooltipProvider>
           </CurrencyProvider>

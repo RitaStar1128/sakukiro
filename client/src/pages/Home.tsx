@@ -157,7 +157,7 @@ export default function Home() {
             <div className="flex flex-col gap-1">
               <label className="text-[10px] font-black uppercase tracking-widest pl-1">{t("category")}</label>
               <Select value={categoryKey} onValueChange={setCategoryKey}>
-                <SelectTrigger className="neo-input h-12 w-full text-sm px-3 py-0 border-2 shadow-none focus:shadow-[2px_2px_0px_0px_var(--color-safety-orange)]">
+                <SelectTrigger className="h-14 w-full text-sm font-bold px-3 py-0 border-2 border-black dark:border-white rounded-none shadow-none focus:ring-0 focus:shadow-[4px_4px_0px_0px_var(--color-safety-orange)] transition-all bg-white dark:bg-black">
                   <SelectValue placeholder={t("category")} />
                 </SelectTrigger>
                 <SelectContent className="border-2 border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] max-h-[40vh]">
@@ -175,7 +175,7 @@ export default function Home() {
                 value={note} 
                 onChange={(e) => setNote(e.target.value)} 
                 placeholder={t("notePlaceholder")} 
-                className="neo-input h-12 text-sm px-3 py-0 border-2 shadow-none focus:shadow-[2px_2px_0px_0px_var(--color-safety-orange)] placeholder:text-muted-foreground/40"
+                className="h-14 text-sm font-bold px-3 py-0 border-2 border-black dark:border-white rounded-none shadow-none focus-visible:ring-0 focus-visible:shadow-[4px_4px_0px_0px_var(--color-safety-orange)] placeholder:text-muted-foreground/40 transition-all bg-white dark:bg-black"
               />
             </div>
           </div>

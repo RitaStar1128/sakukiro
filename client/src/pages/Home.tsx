@@ -117,7 +117,7 @@ export default function Home() {
             variant="ghost" 
             size="icon" 
             onClick={() => setLocation("/history")}
-            className="w-10 h-10 rounded-none border-2 border-transparent hover:border-black dark:hover:border-white hover:bg-accent hover:text-accent-foreground transition-all active:translate-y-1"
+            className="w-10 h-10 rounded-none border-2 border-black dark:border-white hover:bg-accent hover:text-accent-foreground transition-all active:translate-y-1"
           >
             <History className="w-6 h-6" strokeWidth={2.5} />
           </Button>
@@ -136,9 +136,9 @@ export default function Home() {
               key={amount}
               initial={{ scale: 0.98 }}
               animate={{ scale: 1 }}
-              className="neo-input h-24 flex items-end justify-end text-6xl tracking-tighter overflow-hidden bg-white dark:bg-black transition-all group-focus-within:shadow-[6px_6px_0px_0px_var(--color-safety-orange)] pr-14 relative"
+              className="neo-input h-24 flex items-end justify-end text-7xl tracking-tighter overflow-hidden bg-white dark:bg-black transition-all group-focus-within:shadow-[6px_6px_0px_0px_var(--color-safety-orange)] pr-14 relative"
             >
-              <span className="text-3xl mr-2 self-end mb-2 font-bold text-muted-foreground">{getSymbol()}</span>
+              <span className="text-4xl mr-2 self-end mb-2 font-bold text-muted-foreground">{getSymbol()}</span>
               <span className={amount ? "text-foreground" : "text-muted-foreground/20"}>
                 {amount || "0"}
               </span>
@@ -158,10 +158,10 @@ export default function Home() {
           {/* Secondary Inputs - Compact Row */}
           <div className="grid grid-cols-[1.2fr_1.8fr] gap-3">
             <div className="flex flex-col gap-1">
-              <label className="text-[10px] font-black uppercase tracking-widest pl-1">{t("category")}</label>
+              <label className="text-xs font-black uppercase tracking-widest pl-1">{t("category")}</label>
               <Select value={categoryKey} onValueChange={setCategoryKey}>
                 <SelectTrigger 
-                  className="w-full text-sm font-bold px-3 py-0 border-2 border-black dark:border-white rounded-none shadow-none focus:ring-0 focus:shadow-[4px_4px_0px_0px_var(--color-safety-orange)] transition-all bg-white dark:bg-black box-border"
+                  className="w-full text-base font-bold px-3 py-0 border-2 border-black dark:border-white rounded-none shadow-none focus:ring-0 focus:shadow-[4px_4px_0px_0px_var(--color-safety-orange)] transition-all bg-white dark:bg-black box-border"
                   style={{ height: '56px' }}
                 >
                   <SelectValue placeholder={t("category")} />
@@ -176,12 +176,12 @@ export default function Home() {
               </Select>
             </div>
             <div className="flex flex-col gap-1">
-              <label className="text-[10px] font-black uppercase tracking-widest pl-1">{t("note")}</label>
+              <label className="text-xs font-black uppercase tracking-widest pl-1">{t("note")}</label>
               <Input 
                 value={note} 
                 onChange={(e) => setNote(e.target.value)} 
                 placeholder={t("notePlaceholder")} 
-                className="text-sm font-bold px-3 py-0 border-2 border-black dark:border-white rounded-none shadow-none focus-visible:ring-0 focus-visible:shadow-[4px_4px_0px_0px_var(--color-safety-orange)] placeholder:text-muted-foreground/40 transition-all bg-white dark:bg-black box-border"
+                className="text-base font-bold px-3 py-0 border-2 border-black dark:border-white rounded-none shadow-none focus-visible:ring-0 focus-visible:shadow-[4px_4px_0px_0px_var(--color-safety-orange)] placeholder:text-muted-foreground/40 transition-all bg-white dark:bg-black box-border"
                 style={{ height: '56px' }}
               />
             </div>

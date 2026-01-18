@@ -69,7 +69,7 @@ export default function HistoryPage() {
           variant="ghost" 
           size="icon" 
           onClick={() => setLocation("/")}
-          className="mr-2 w-10 h-10 rounded-none border-2 border-transparent hover:border-black dark:hover:border-white hover:bg-accent hover:text-accent-foreground transition-all active:translate-x-[-2px]"
+          className="mr-2 w-10 h-10 rounded-none border-2 border-black dark:border-white hover:bg-accent hover:text-accent-foreground transition-all active:translate-x-[-2px]"
         >
           <ArrowLeft className="w-6 h-6" strokeWidth={2.5} />
         </Button>

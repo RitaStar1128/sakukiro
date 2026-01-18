@@ -148,6 +148,8 @@
   body {
     @apply bg-background text-foreground overflow-y-scroll; /* Scrollbar integration */
     font-family: 'Space Grotesk', 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
 
@@ -194,11 +196,14 @@
     padding: 1rem;
     font-size: 1.125rem;
     font-weight: 700;
+    border-radius: 0; /* Ensure sharp edges */
   }
   
   .neo-input:focus {
     outline: none;
     box-shadow: 4px 4px 0px 0px var(--color-safety-orange);
+    transform: translate(-2px, -2px); /* Pop out effect on focus */
+    transition: all 0.1s ease-out;
   }
   
   .dark .neo-input {

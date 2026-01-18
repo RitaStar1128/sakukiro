@@ -3,14 +3,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useLocation } from "wouter";
-import { History, ShoppingBag, Delete, Check } from "lucide-react";
+import { History, ShoppingBag, Delete, Check, X } from "lucide-react";
 import { toast } from "sonner";
+import { motion, AnimatePresence } from "framer-motion";
 
 // UX_RATIONALE:
-// - jacob_law: テンキー配置は一般的な電卓や電話のUIを踏襲し、学習コストを下げる。
-// - fitts_law: 頻繁に押す数字キーと確定ボタンを大きく配置し、操作ミスを減らす。
-// - peak_end_rule: 入力完了時に明確なフィードバック（トースト通知と画面リセット）を行い、達成感を与える。
-// - data_entry_placeholder: 金額入力の初期値は空文字とし、プレースホルダーで「0」を表示する。
+// - fitts_law: 画面下部（サムゾーン）に操作系を集約。テンキーと確定ボタンを画面の約50%〜60%の領域に拡大し、親指での誤タップを極限まで減らす。
+// - jacob_law: 電卓アプリのメンタルモデルを踏襲。クリア(C)や削除(Back)の配置を直感的な位置に。
+// - miller_law: 画面上の情報量を「金額」「カテゴリ」「備考」の3つに絞り、認知負荷を下げる。
+// - peak_end_rule: 入力完了時のアニメーションと触覚的なフィードバック（視覚的）を強化し、記録完了の快感を提供する。
 
 const CATEGORIES = [
   "食費",
@@ -30,7 +31,7 @@ export default function Home() {
 
   // テンキー入力処理
   const handleNumClick = (num: string) => {
-    if (amount.length >= 7) return; // 桁数制限
+    if (amount.length >= 7) return;
     setAmount((prev) => prev + num);
   };
 
@@ -56,118 +57,136 @@ export default function Home() {
       date: new Date().toISOString(),
     };
 
-    // ローカルストレージに保存
     const storedData = localStorage.getItem("kaimono_records");
     const records = storedData ? JSON.parse(storedData) : [];
     localStorage.setItem("kaimono_records", JSON.stringify([newRecord, ...records]));
 
     toast.success("記録しました！");
     
-    // リセット
     setAmount("");
     setNote("");
-    // カテゴリは前回値を保持するかリセットするか選択の余地があるが、連続入力を考慮して保持する
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-background text-foreground font-sans overflow-hidden">
-      {/* Header */}
-      <header className="flex justify-between items-center p-4 border-b-4 border-black dark:border-white bg-white dark:bg-black z-10">
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="h-[100dvh] flex flex-col bg-background text-foreground font-sans overflow-hidden touch-none"
+    >
+      {/* Header - Minimal & Accessible */}
+      <header className="flex justify-between items-center px-4 py-3 border-b-2 border-black dark:border-white bg-white dark:bg-black shrink-0 z-20">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 bg-primary flex items-center justify-center border-2 border-black dark:border-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)]">
-            <ShoppingBag className="w-5 h-5 text-primary-foreground" />
+            <ShoppingBag className="w-4 h-4 text-primary-foreground" strokeWidth={3} />
           </div>
-          <h1 className="text-xl font-bold tracking-tighter uppercase">Kaimono</h1>
+          <h1 className="text-lg font-black tracking-tighter uppercase">Kaimono</h1>
         </div>
         <Button 
           variant="ghost" 
           size="icon" 
           onClick={() => setLocation("/history")}
-          className="hover:bg-accent hover:text-accent-foreground border-2 border-transparent hover:border-black dark:hover:border-white transition-all"
+          className="w-10 h-10 rounded-none border-2 border-transparent hover:border-black dark:hover:border-white hover:bg-accent hover:text-accent-foreground transition-all active:translate-y-1"
         >
-          <History className="w-6 h-6" />
+          <History className="w-6 h-6" strokeWidth={2.5} />
         </Button>
       </header>
 
-      <main className="flex-1 flex flex-col max-w-md mx-auto w-full p-4 gap-4">
-        {/* Display Area */}
-        <div className="flex flex-col gap-2">
-          <div className="relative">
-            <div className="absolute top-2 left-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">Amount</div>
-            <div className="neo-input h-24 flex items-end justify-end text-5xl tracking-tighter overflow-hidden">
-              <span className="text-2xl mr-1 self-end mb-2">¥</span>
-              {amount || <span className="text-muted-foreground/30">0</span>}
+      <main className="flex-1 flex flex-col w-full max-w-md mx-auto relative">
+        {/* Upper Section: Display & Inputs */}
+        <div className="flex flex-col px-4 pt-4 pb-2 gap-4 shrink-0">
+          {/* Amount Display - The Hero */}
+          <div className="relative group">
+            <div className="absolute top-2 left-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground pointer-events-none">
+              Amount
+            </div>
+            <motion.div 
+              key={amount}
+              initial={{ scale: 0.98 }}
+              animate={{ scale: 1 }}
+              className="neo-input h-24 flex items-end justify-end text-6xl tracking-tighter overflow-hidden bg-white dark:bg-black transition-all group-focus-within:shadow-[6px_6px_0px_0px_var(--color-safety-orange)]"
+            >
+              <span className="text-3xl mr-2 self-end mb-2 font-bold text-muted-foreground">¥</span>
+              <span className={amount ? "text-foreground" : "text-muted-foreground/20"}>
+                {amount || "0"}
+              </span>
+            </motion.div>
+          </div>
+
+          {/* Secondary Inputs - Compact Row */}
+          <div className="grid grid-cols-[1.2fr_1.8fr] gap-3">
+            <div className="flex flex-col gap-1">
+              <label className="text-[10px] font-black uppercase tracking-widest pl-1">Category</label>
+              <Select value={category} onValueChange={setCategory}>
+                <SelectTrigger className="neo-input h-12 w-full text-sm px-3 py-0 border-2 shadow-none focus:shadow-[2px_2px_0px_0px_var(--color-safety-orange)]">
+                  <SelectValue placeholder="Category" />
+                </SelectTrigger>
+                <SelectContent className="border-2 border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] max-h-[40vh]">
+                  {CATEGORIES.map((cat) => (
+                    <SelectItem key={cat} value={cat} className="font-bold py-3 cursor-pointer focus:bg-accent focus:text-accent-foreground">
+                      {cat}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-[10px] font-black uppercase tracking-widest pl-1">Note</label>
+              <Input 
+                value={note} 
+                onChange={(e) => setNote(e.target.value)} 
+                placeholder="Store, item..." 
+                className="neo-input h-12 text-sm px-3 py-0 border-2 shadow-none focus:shadow-[2px_2px_0px_0px_var(--color-safety-orange)] placeholder:text-muted-foreground/40"
+              />
             </div>
           </div>
         </div>
 
-        {/* Input Details */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-bold uppercase tracking-widest">Category</label>
-            <Select value={category} onValueChange={setCategory}>
-              <SelectTrigger className="neo-input h-12 w-full text-base">
-                <SelectValue placeholder="Category" />
-              </SelectTrigger>
-              <SelectContent className="border-2 border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
-                {CATEGORIES.map((cat) => (
-                  <SelectItem key={cat} value={cat} className="font-bold focus:bg-accent focus:text-accent-foreground cursor-pointer">
-                    {cat}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-bold uppercase tracking-widest">Note</label>
-            <Input 
-              value={note} 
-              onChange={(e) => setNote(e.target.value)} 
-              placeholder="Store name, etc." 
-              className="neo-input h-12 text-base placeholder:text-muted-foreground/50"
-            />
-          </div>
-        </div>
-
-        {/* Keypad */}
-        <div className="flex-1 grid grid-cols-3 gap-3 mt-2">
-          {[7, 8, 9, 4, 5, 6, 1, 2, 3].map((num) => (
+        {/* Lower Section: Keypad & Action - The Thumb Zone */}
+        <div className="flex-1 flex flex-col p-4 pt-2 gap-3 min-h-0">
+          <div className="flex-1 grid grid-cols-3 gap-3">
+            {[7, 8, 9, 4, 5, 6, 1, 2, 3].map((num) => (
+              <motion.button
+                key={num}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => handleNumClick(num.toString())}
+                className="neo-btn bg-white dark:bg-black text-3xl hover:bg-gray-50 dark:hover:bg-gray-900 active:translate-y-[2px] active:translate-x-[2px] active:shadow-none flex items-center justify-center rounded-sm"
+              >
+                {num}
+              </motion.button>
+            ))}
+            
+            {/* Bottom Row of Keypad */}
             <button
-              key={num}
-              onClick={() => handleNumClick(num.toString())}
-              className="neo-btn bg-white dark:bg-black text-2xl hover:bg-gray-100 dark:hover:bg-gray-900 active:translate-y-1 active:shadow-none"
+              onClick={handleClear}
+              className="neo-btn bg-muted text-muted-foreground text-xl hover:bg-muted/80 active:translate-y-[2px] active:translate-x-[2px] active:shadow-none flex items-center justify-center rounded-sm"
             >
-              {num}
+              <span className="font-black">AC</span>
             </button>
-          ))}
-          <button
-            onClick={handleClear}
-            className="neo-btn bg-muted text-muted-foreground text-lg hover:bg-muted/80 active:translate-y-1 active:shadow-none"
-          >
-            C
-          </button>
-          <button
-            onClick={() => handleNumClick("0")}
-            className="neo-btn bg-white dark:bg-black text-2xl hover:bg-gray-100 dark:hover:bg-gray-900 active:translate-y-1 active:shadow-none"
-          >
-            0
-          </button>
-          <button
-            onClick={handleDelete}
-            className="neo-btn bg-muted text-muted-foreground flex items-center justify-center hover:bg-muted/80 active:translate-y-1 active:shadow-none"
-          >
-            <Delete className="w-6 h-6" />
-          </button>
-        </div>
+            <button
+              onClick={() => handleNumClick("0")}
+              className="neo-btn bg-white dark:bg-black text-3xl hover:bg-gray-50 dark:hover:bg-gray-900 active:translate-y-[2px] active:translate-x-[2px] active:shadow-none flex items-center justify-center rounded-sm"
+            >
+              0
+            </button>
+            <button
+              onClick={handleDelete}
+              className="neo-btn bg-muted text-muted-foreground hover:bg-muted/80 active:translate-y-[2px] active:translate-x-[2px] active:shadow-none flex items-center justify-center rounded-sm"
+            >
+              <Delete className="w-7 h-7" strokeWidth={2.5} />
+            </button>
+          </div>
 
-        {/* Submit Button */}
-        <Button 
-          onClick={handleSubmit}
-          className="h-16 text-xl font-black uppercase tracking-widest border-2 border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] active:translate-y-[2px] active:translate-x-[2px] active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:active:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] transition-all bg-primary text-primary-foreground hover:bg-primary/90 w-full mt-2"
-        >
-          Confirm <Check className="ml-2 w-6 h-6" strokeWidth={3} />
-        </Button>
+          {/* Confirm Button - Massive & Satisfying */}
+          <motion.button 
+            whileTap={{ scale: 0.98, y: 4, x: 4, boxShadow: "0px 0px 0px 0px rgba(0,0,0,0)" }}
+            onClick={handleSubmit}
+            className="h-20 shrink-0 text-2xl font-black uppercase tracking-[0.2em] border-2 border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] transition-all bg-primary text-primary-foreground hover:bg-primary hover:brightness-110 w-full rounded-sm flex items-center justify-center gap-3"
+          >
+            Confirm <Check className="w-8 h-8" strokeWidth={4} />
+          </motion.button>
+        </div>
       </main>
-    </div>
+    </motion.div>
   );
 }

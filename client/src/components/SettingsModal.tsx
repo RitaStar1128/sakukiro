@@ -3,11 +3,14 @@ import { Button } from "@/components/ui/button";
 import { Settings, Check } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCurrency, CurrencyCode } from "@/contexts/CurrencyContext";
+import { useTheme } from "@/contexts/ThemeContext";
 import { motion } from "framer-motion";
+import { Sun, Moon, Monitor } from "lucide-react";
 
 export function SettingsModal() {
   const { t, language, setLanguage } = useLanguage();
   const { currency, setCurrency, availableCurrencies } = useCurrency();
+  const { theme, setTheme } = useTheme();
 
   return (
     <Dialog>
@@ -47,6 +50,46 @@ export function SettingsModal() {
               >
                 <span className="font-bold">English</span>
                 {language === "en" && <Check className="w-4 h-4" strokeWidth={3} />}
+              </button>
+            </div>
+          </div>
+
+          {/* Theme Section */}
+          <div className="space-y-3">
+            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Theme</h3>
+            <div className="grid grid-cols-3 gap-3">
+              <button
+                onClick={() => setTheme("light")}
+                className={`neo-border p-3 flex flex-col items-center justify-center gap-2 transition-all active:translate-y-[2px] active:shadow-none ${
+                  theme === "light"
+                    ? "bg-primary text-primary-foreground shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)]"
+                    : "bg-background hover:bg-accent shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)]"
+                }`}
+              >
+                <Sun className="w-6 h-6" strokeWidth={2.5} />
+                <span className="text-xs font-bold">Light</span>
+              </button>
+              <button
+                onClick={() => setTheme("dark")}
+                className={`neo-border p-3 flex flex-col items-center justify-center gap-2 transition-all active:translate-y-[2px] active:shadow-none ${
+                  theme === "dark"
+                    ? "bg-primary text-primary-foreground shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)]"
+                    : "bg-background hover:bg-accent shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)]"
+                }`}
+              >
+                <Moon className="w-6 h-6" strokeWidth={2.5} />
+                <span className="text-xs font-bold">Dark</span>
+              </button>
+              <button
+                onClick={() => setTheme("system")}
+                className={`neo-border p-3 flex flex-col items-center justify-center gap-2 transition-all active:translate-y-[2px] active:shadow-none ${
+                  theme === "system"
+                    ? "bg-primary text-primary-foreground shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)]"
+                    : "bg-background hover:bg-accent shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)]"
+                }`}
+              >
+                <Monitor className="w-6 h-6" strokeWidth={2.5} />
+                <span className="text-xs font-bold">System</span>
               </button>
             </div>
           </div>

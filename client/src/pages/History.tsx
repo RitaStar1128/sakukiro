@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
-import { ArrowLeft, Trash2, ShoppingBag, AlertTriangle, X } from "lucide-react";
+import { ArrowLeft, Trash2, ShoppingBag, AlertTriangle, X, Download } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -54,6 +54,42 @@ export default function HistoryPage() {
     // toast.success(t("delete")); // 削除通知を廃止し、リストからの消失アニメーションのみとする
   };
 
+  const handleExportCSV = () => {
+    if (records.length === 0) {
+      toast.error(t("noRecords"));
+      return;
+    }
+
+    // CSV Header
+    const headers = ["Date", "Amount", "Currency", "Category", "Note"];
+    
+    // CSV Rows
+    const rows = records.map(record => {
+      const date = new Date(record.date).toLocaleString();
+      const category = record.categoryKey ? t(record.categoryKey) : record.category;
+      // Escape quotes in note
+      const note = record.note ? `"${record.note.replace(/"/g, '""')}"` : "";
+      
+      return [
+        date,
+        record.amount,
+        record.currency || "JPY",
+        category,
+        note
+      ].join(",");
+    });
+
+    const csvContent = [headers.join(","), ...rows].join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `kaimono_export_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
 
 
   return (
@@ -73,7 +109,18 @@ export default function HistoryPage() {
         >
           <ArrowLeft className="w-6 h-6" strokeWidth={2.5} />
         </Button>
-        <h1 className="text-lg font-black tracking-tighter uppercase">{t("history")}</h1>
+        <h1 className="text-lg font-black tracking-tighter uppercase flex-1">{t("history")}</h1>
+        {records.length > 0 && (
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={handleExportCSV}
+            className="w-10 h-10 rounded-none border-2 border-black dark:border-white hover:bg-accent hover:text-accent-foreground transition-all active:translate-y-1"
+            title="Export CSV"
+          >
+            <Download className="w-6 h-6" strokeWidth={2.5} />
+          </Button>
+        )}
       </header>
 
       <main className="flex-1 max-w-md mx-auto w-full p-4">

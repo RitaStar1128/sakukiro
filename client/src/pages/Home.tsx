@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { SettingsModal } from "@/components/SettingsModal";
+import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 
 // UX_RATIONALE:
 // - fitts_law: 画面下部（サムゾーン）に操作系を集約。テンキーと確定ボタンを画面の約50%〜60%の領域に拡大し、親指での誤タップを極限まで減らす。
@@ -100,6 +101,7 @@ export default function Home() {
       exit={{ opacity: 0 }}
       className="h-[100dvh] flex flex-col bg-background text-foreground font-sans overflow-hidden touch-none"
     >
+      <PWAInstallPrompt />
       {/* Header - Minimal & Accessible */}
       <header className="flex justify-between items-center px-4 py-3 border-b-2 border-black dark:border-white bg-white dark:bg-black shrink-0 z-20">
         <div className="flex items-center gap-3">

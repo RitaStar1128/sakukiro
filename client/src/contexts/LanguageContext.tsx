@@ -44,18 +44,18 @@ interface LanguageContextType {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [language, setLanguage] = useState<Language>("ja");
-
-  useEffect(() => {
+  const [language, setLanguage] = useState<Language>(() => {
+    // Check localStorage first
     const storedLang = localStorage.getItem("kaimono_language") as Language;
-    if (storedLang) {
-      setLanguage(storedLang);
-    } else {
-      // Auto-detect browser language
-      const browserLang = navigator.language.startsWith("ja") ? "ja" : "en";
-      setLanguage(browserLang);
+    if (storedLang) return storedLang;
+    
+    // Fallback to browser language
+    if (typeof navigator !== 'undefined') {
+      return navigator.language.startsWith("ja") ? "ja" : "en";
     }
-  }, []);
+    
+    return "ja";
+  });
 
   const updateLanguage = (lang: Language) => {
     setLanguage(lang);

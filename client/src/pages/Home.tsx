@@ -39,6 +39,10 @@ export default function Home() {
   const [_, setLocation] = useLocation();
   const [isHelpOpen, setIsHelpOpen] = useState(false);
 
+  useEffect(() => {
+    document.title = "サクキロ (SAKUKIRO) - 最速の支出管理・家計簿アプリ";
+  }, []);
+
   // テンキー入力処理
   const handleNumClick = (num: string) => {
     // 小数点入力の制御

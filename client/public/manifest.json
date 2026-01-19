@@ -1,6 +1,6 @@
 {
-  "name": "Kaimono Kiroku",
-  "short_name": "Kaimono",
+  "name": "サクキロ (SAKUKIRO)",
+  "short_name": "サクキロ",
   "description": "Fastest shopping tracker",
   "start_url": "/",
   "display": "standalone",
@@ -8,12 +8,12 @@
   "theme_color": "#ff5e00",
   "icons": [
     {
-      "src": "/images/icon-spending.png",
+      "src": "/images/icon-sakukiro.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "/images/icon-spending.png",
+      "src": "/images/icon-sakukiro.png",
       "sizes": "512x512",
       "type": "image/png"
     }

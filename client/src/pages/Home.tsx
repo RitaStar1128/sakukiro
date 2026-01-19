@@ -10,6 +10,8 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { SettingsModal } from "@/components/SettingsModal";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
+import { HelpModal } from "@/components/HelpModal";
+import { HelpCircle } from "lucide-react";
 
 // UX_RATIONALE:
 // - fitts_law: 画面下部（サムゾーン）に操作系を集約。テンキーと確定ボタンを画面の約50%〜60%の領域に拡大し、親指での誤タップを極限まで減らす。
@@ -35,6 +37,7 @@ export default function Home() {
   const [note, setNote] = useState("");
   const [isSaved, setIsSaved] = useState(false);
   const [_, setLocation] = useLocation();
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
 
   // テンキー入力処理
   const handleNumClick = (num: string) => {
@@ -102,6 +105,7 @@ export default function Home() {
       className="h-[100dvh] flex flex-col bg-background text-foreground font-sans overflow-hidden touch-none"
     >
       <PWAInstallPrompt />
+      <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
       {/* Header - Minimal & Accessible */}
       <header className="flex justify-between items-center px-4 py-3 border-b-2 border-black dark:border-white bg-white dark:bg-black shrink-0 z-20">
         <div className="flex items-center gap-3">
@@ -109,8 +113,15 @@ export default function Home() {
             <div className="w-8 h-8 bg-primary flex items-center justify-center border-2 border-black dark:border-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)]">
               <ShoppingBag className="w-4 h-4 text-primary-foreground" strokeWidth={3} />
             </div>
-            <h1 className="text-lg font-black tracking-tighter uppercase">Kaimono</h1>
+            <h1 className="text-lg font-black tracking-tighter uppercase">SAKUKIRO</h1>
           </div>
+          <button
+            onClick={() => setIsHelpOpen(true)}
+            className="w-8 h-8 flex items-center justify-center border-2 border-black dark:border-white bg-white dark:bg-black hover:bg-accent transition-colors shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] active:translate-y-[1px] active:translate-x-[1px] active:shadow-none"
+            aria-label="Help"
+          >
+            <HelpCircle className="w-4 h-4" strokeWidth={3} />
+          </button>
         </div>
 
         <div className="flex items-center gap-2">

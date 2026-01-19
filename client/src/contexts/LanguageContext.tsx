@@ -51,10 +51,16 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     
     // Fallback to browser language
     if (typeof navigator !== 'undefined') {
-      return navigator.language.startsWith("ja") ? "ja" : "en";
+      // Check navigator.languages first (preferred languages list)
+      if (navigator.languages && navigator.languages.length > 0) {
+        const hasJa = navigator.languages.some(lang => lang.toLowerCase().startsWith('ja'));
+        return hasJa ? "ja" : "en";
+      }
+      // Fallback to navigator.language
+      return navigator.language.toLowerCase().startsWith("ja") ? "ja" : "en";
     }
     
-    return "ja";
+    return "en"; // Default to English if no browser info available
   });
 
   const updateLanguage = (lang: Language) => {

@@ -38,6 +38,15 @@ export default function Home() {
   const [isSaved, setIsSaved] = useState(false);
   const [_, setLocation] = useLocation();
   const [isHelpOpen, setIsHelpOpen] = useState(false);
+  
+  // 初回訪問判定
+  useEffect(() => {
+    const hasVisited = localStorage.getItem("has_visited_sakukiro");
+    if (!hasVisited) {
+      setIsHelpOpen(true);
+      localStorage.setItem("has_visited_sakukiro", "true");
+    }
+  }, []);
 
   useEffect(() => {
     document.title = "サクキロ (SAKUKIRO) - 最速の支出管理・家計簿アプリ";

@@ -11,6 +11,7 @@ import { useCurrency } from "@/contexts/CurrencyContext";
 import { SettingsModal } from "@/components/SettingsModal";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { HelpModal } from "@/components/HelpModal";
+import { DonationModal } from "@/components/DonationModal";
 import { HelpCircle } from "lucide-react";
 
 // UX_RATIONALE:
@@ -137,8 +138,9 @@ export default function Home() {
           </button>
         </div>
 
-        <div className="flex items-center gap-2">
-          <SettingsModal />
+          <div className="flex items-center gap-2">
+            <DonationModal />
+            <SettingsModal />
           <Button 
             variant="ghost" 
             size="icon" 

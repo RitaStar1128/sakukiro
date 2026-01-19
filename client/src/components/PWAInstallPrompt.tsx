@@ -18,8 +18,15 @@ export function PWAInstallPrompt() {
   const [showBanner, setShowBanner] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [currentUrl, setCurrentUrl] = useState("");
+  const [forcePC, setForcePC] = useState(false);
 
   useEffect(() => {
+    // Check if user has chosen to use PC version
+    const storedForcePC = localStorage.getItem("kaimono_force_pc");
+    if (storedForcePC === "true") {
+      setForcePC(true);
+    }
+
     // Check if running as PWA
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
                          (window.navigator as any).standalone || 
@@ -43,7 +50,7 @@ export function PWAInstallPrompt() {
   if (isPWA) return null;
 
   // PC View: Show QR Code Overlay
-  if (!isMobile) {
+  if (!isMobile && !forcePC) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
         <div className="bg-white dark:bg-black border-4 border-black dark:border-white p-8 max-w-md w-full shadow-[8px_8px_0px_0px_var(--color-safety-orange)] text-center relative">
@@ -61,9 +68,20 @@ export function PWAInstallPrompt() {
             <QRCodeSVG value={currentUrl} size={180} />
           </div>
           
-          <p className="text-xs font-mono text-muted-foreground break-all">
+          <p className="text-xs font-mono text-muted-foreground break-all mb-6">
             {currentUrl}
           </p>
+
+          <Button 
+            variant="outline" 
+            onClick={() => {
+              setForcePC(true);
+              localStorage.setItem("kaimono_force_pc", "true");
+            }}
+            className="w-full border-2 border-black dark:border-white hover:bg-accent font-bold"
+          >
+            {language === 'ja' ? 'PC版を利用する' : 'Continue on PC'}
+          </Button>
         </div>
       </div>
     );

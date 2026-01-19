@@ -5,7 +5,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useCurrency, CurrencyCode } from "@/contexts/CurrencyContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { motion } from "framer-motion";
-import { Sun, Moon, Monitor } from "lucide-react";
+import { Sun, Moon, Monitor, Smartphone } from "lucide-react";
 
 export function SettingsModal() {
   const { t, language, setLanguage } = useLanguage();
@@ -92,6 +92,23 @@ export function SettingsModal() {
                 <span className="text-xs font-bold">System</span>
               </button>
             </div>
+          </div>
+
+          {/* Mobile Access Section */}
+          <div className="space-y-3">
+            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Mobile Access</h3>
+            <button
+              onClick={() => {
+                localStorage.removeItem("kaimono_force_pc");
+                window.location.reload();
+              }}
+              className="w-full neo-border p-3 flex items-center justify-between bg-background hover:bg-accent shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] transition-all active:translate-y-[2px] active:shadow-none"
+            >
+              <div className="flex items-center gap-3">
+                <Smartphone className="w-5 h-5" strokeWidth={2.5} />
+                <span className="font-bold">{language === 'ja' ? 'モバイルで開く (QR)' : 'Open on Mobile (QR)'}</span>
+              </div>
+            </button>
           </div>
 
           {/* Currency Section */}

@@ -71,6 +71,19 @@ async function startServer() {
     });
   }
 
+  // Global error handler
+  app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+    const status = err.status || err.statusCode || 500;
+    const message = err.message || "Internal Server Error";
+
+    // Force JSON response for API routes
+    if (req.path.startsWith("/api")) {
+      res.status(status).json({ message });
+    } else {
+      next(err);
+    }
+  });
+
   const port = process.env.PORT || 3000;
 
   server.listen(port, () => {

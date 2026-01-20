@@ -13,8 +13,11 @@ async function startServer() {
   // Apply JSON parsing for other routes
   // Important: Do NOT apply express.json() globally before registerRoutes
   // because the webhook endpoint needs raw body for signature verification.
+  // Apply JSON parsing for other routes
+  // Important: Do NOT apply express.json() globally before registerRoutes
+  // because the webhook endpoint needs raw body for signature verification.
   app.use((req, res, next) => {
-    if (req.path === '/api/stripe/webhook') {
+    if (req.path.startsWith('/api/stripe/webhook')) {
       next();
     } else {
       express.json()(req, res, next);

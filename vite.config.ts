@@ -27,6 +27,9 @@ export default defineConfig({
     port: 3000,
     strictPort: false, // Will find next available port if 3000 is busy
     host: true,
+    hmr: {
+      clientPort: 443, // Force client to connect via HTTPS port
+    },
     allowedHosts: [
       ".manuspre.computer",
       ".manus.computer",

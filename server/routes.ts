@@ -100,7 +100,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ url: session.url });
     } catch (error: any) {
       console.error("Stripe Checkout Error:", error);
-      res.status(500).json({ error: error.message });
+      // Ensure we return JSON even for 500 errors
+      res.status(500).json({ 
+        error: error.message || "An error occurred during checkout session creation",
+        details: process.env.NODE_ENV === "development" ? error.stack : undefined
+      });
     }
   });
 

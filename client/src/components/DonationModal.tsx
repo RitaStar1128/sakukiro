@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Coffee, Heart } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -52,6 +52,9 @@ export function DonationModal() {
             <Heart className="w-5 h-5 text-red-500 fill-current" />
             {language === "ja" ? "開発者を支援" : "Support Dev"}
           </DialogTitle>
+          <DialogDescription className="sr-only">
+            {language === "ja" ? "開発者を支援するための寄付オプションを選択してください" : "Choose a donation option to support the developer"}
+          </DialogDescription>
         </DialogHeader>
         
         <div className="p-6 space-y-4">

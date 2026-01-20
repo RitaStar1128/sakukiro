@@ -10,12 +10,10 @@ const __dirname = path.dirname(__filename);
 async function startServer() {
   const app = express();
   
+  // Apply raw body parsing for Stripe webhooks
+  app.use('/api/stripe/webhook', express.raw({ type: 'application/json' }));
+
   // Apply JSON parsing for other routes
-  // Important: Do NOT apply express.json() globally before registerRoutes
-  // because the webhook endpoint needs raw body for signature verification.
-  // Apply JSON parsing for other routes
-  // Important: Do NOT apply express.json() globally before registerRoutes
-  // because the webhook endpoint needs raw body for signature verification.
   app.use((req, res, next) => {
     if (req.path.startsWith('/api/stripe/webhook')) {
       next();

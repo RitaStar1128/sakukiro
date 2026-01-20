@@ -51,27 +51,14 @@ async function startServer() {
 
     app.use(vite.middlewares);
 
+    // Serve index.html for non-API routes
     app.use("*", async (req, res, next) => {
+      // Skip API routes to prevent returning HTML for API calls
+      if (req.originalUrl.startsWith("/api")) {
+        return next();
+      }
+
       try {
-        const template = await vite.transformIndexHtml(
-          req.originalUrl,
-          `<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite App</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
-</html>`
-        );
-        // In development, we need to read index.html from client directory
-        // But since we are using middleware mode, we can just let Vite handle it
-        // or manually serve the transformed index.html.
-        // A better approach for this setup is to read the actual index.html file
         const fs = await import("fs/promises");
         const indexPath = path.resolve(__dirname, "..", "client", "index.html");
         let html = await fs.readFile(indexPath, "utf-8");

@@ -70,12 +70,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Stripe Checkout Session Creation
   app.post("/api/create-checkout-session", async (req, res) => {
     try {
+      // Check if Stripe key is configured
+      if (!process.env.STRIPE_SECRET_KEY || process.env.STRIPE_SECRET_KEY === "dummy_key_for_build") {
+        console.error("Stripe secret key is missing or invalid");
+        return res.status(503).json({ 
+          error: "Payment service unavailable", 
+          details: "Stripe configuration is missing on the server" 
+        });
+      }
+
       const { productId } = req.body;
+      console.log(`Creating checkout session for product: ${productId}`);
+      
       const product = DONATION_PRODUCTS.find((p) => p.id === productId);
 
       if (!product) {
+        console.error(`Product not found: ${productId}`);
         return res.status(400).json({ error: "Invalid product ID" });
       }
+
+      const origin = req.headers.origin || `https://${req.headers.host}`;
+      console.log(`Using origin for redirect: ${origin}`);
 
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ["card"],
@@ -93,8 +108,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           },
         ],
         mode: "payment",
-        success_url: `${req.headers.origin}/?success=true`,
-        cancel_url: `${req.headers.origin}/?canceled=true`,
+        success_url: `${origin}/?success=true`,
+        cancel_url: `${origin}/?canceled=true`,
       });
 
       res.json({ url: session.url });

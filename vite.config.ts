@@ -29,6 +29,8 @@ export default defineConfig({
     host: true,
     hmr: {
       clientPort: 443, // Force client to connect via HTTPS port
+      path: "/__vite_hmr", // Explicit path for HMR
+      protocol: "wss", // Force WebSocket Secure
     },
     allowedHosts: [
       ".manuspre.computer",
@@ -38,6 +40,7 @@ export default defineConfig({
       ".manusvm.computer",
       "localhost",
       "127.0.0.1",
+      "sg1.manus.computer", // Explicitly allow current region
     ],
     fs: {
       strict: true,

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -40,6 +40,11 @@ export default function Home() {
   const [_, setLocation] = useLocation();
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   
+  // フォントサイズ調整用のRefとState
+  const spanRef = useRef<HTMLSpanElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [fontSize, setFontSize] = useState('4.5rem');
+  
   // 初回訪問判定
   useEffect(() => {
     const hasVisited = localStorage.getItem("has_visited_sakukiro");
@@ -52,6 +57,39 @@ export default function Home() {
   useEffect(() => {
     document.title = "サクキロ (SAKUKIRO) - 最速の支出管理・家計簿アプリ";
   }, []);
+
+  // フォントサイズ自動調整ロジック
+  useEffect(() => {
+    const adjustFontSize = () => {
+      if (!spanRef.current || !containerRef.current) return;
+      
+      const container = containerRef.current;
+      const span = spanRef.current;
+      const containerWidth = container.clientWidth - 8; // paddingを考慮
+      
+      // 初期フォントサイズから開始
+      let size = 72; // 4.5rem相当
+      span.style.fontSize = `${size}px`;
+      
+      // テキストが収まるまでフォントサイズを減らす
+      while (span.scrollWidth > containerWidth && size > 24) {
+        size -= 2;
+        span.style.fontSize = `${size}px`;
+      }
+      
+      setFontSize(`${size}px`);
+    };
+    
+    adjustFontSize();
+    
+    // ResizeObserverでコンテナサイズ変更を監視
+    const resizeObserver = new ResizeObserver(adjustFontSize);
+    if (containerRef.current) {
+      resizeObserver.observe(containerRef.current);
+    }
+    
+    return () => resizeObserver.disconnect();
+  }, [amount]);
 
   // テンキー入力処理
   const handleNumClick = (num: string) => {
@@ -172,19 +210,11 @@ export default function Home() {
               </div>
 
               {/* Amount - Flexible Area with Auto-Scaling Font */}
-              <div className="flex-1 flex items-center justify-end min-w-0 overflow-hidden h-full">
+              <div ref={containerRef} className="flex-1 flex items-center justify-end min-w-0 overflow-hidden h-full">
                 <span 
-                  className={`flex items-center justify-end font-bold tracking-tighter text-right w-full h-full px-1 ${amount ? "text-foreground" : "text-muted-foreground/20"}`}
-                  style={{
-                    fontSize: (() => {
-                      const len = amount.length;
-                      if (len >= 9) return "2.5rem";
-                      if (len === 8) return "2.9rem";
-                      if (len === 7) return "3.25rem";
-                      if (len === 6) return "4rem";
-                      return "4.5rem";
-                    })()
-                  }}
+                  ref={spanRef}
+                  className={`flex items-center justify-end font-bold tracking-tighter text-right w-full h-full px-1 whitespace-nowrap ${amount ? "text-foreground" : "text-muted-foreground/20"}`}
+                  style={{ fontSize }}
                 >
                   {amount ? (() => {
                     const parts = amount.split('.');

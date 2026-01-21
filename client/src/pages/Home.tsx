@@ -163,7 +163,7 @@ export default function Home() {
               key={amount}
               initial={{ scale: 0.98 }}
               animate={{ scale: 1 }}
-              className="neo-input h-24 flex items-center justify-end text-7xl tracking-tighter overflow-hidden bg-white dark:bg-black transition-all group-focus-within:shadow-[6px_6px_0px_0px_var(--color-safety-orange)] pr-14 pl-20 relative"
+              className="neo-input h-24 flex items-center justify-end text-7xl tracking-tighter overflow-hidden bg-white dark:bg-black transition-all group-focus-within:shadow-[6px_6px_0px_0px_var(--color-safety-orange)] pr-20 pl-16 relative"
             >
               {/* Currency Info - Fixed Left */}
               <div className="absolute left-4 top-1/2 -translate-y-1/2 flex flex-col items-center pointer-events-none">
@@ -173,9 +173,9 @@ export default function Home() {
 
               {/* Amount - Right Aligned */}
               <span className={`${
-                amount.length > 10 ? "text-4xl" : 
-                amount.length > 8 ? "text-5xl" : 
-                amount.length > 6 ? "text-6xl" : "text-7xl"
+                amount.length > 9 ? "text-4xl" : 
+                amount.length > 7 ? "text-5xl" : 
+                amount.length > 5 ? "text-6xl" : "text-7xl"
               } ${amount ? "text-foreground" : "text-muted-foreground/20"} transition-all duration-200 text-right w-full`}>
                 {amount ? (() => {
                   const parts = amount.split('.');
@@ -188,7 +188,7 @@ export default function Home() {
               {amount && (
                 <button 
                   onClick={handleClear}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-muted-foreground hover:text-foreground transition-colors"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-muted-foreground hover:text-foreground transition-colors z-10"
                 >
                   <X className="w-6 h-6" strokeWidth={3} />
                 </button>

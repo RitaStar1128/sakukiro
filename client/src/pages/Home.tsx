@@ -207,10 +207,16 @@ export default function Home() {
             </div>
             <div className="flex flex-col gap-1">
               <label className="text-xs font-black uppercase tracking-widest pl-1">{t("note")}</label>
-              <Input 
+                <Input 
                 value={note} 
                 onChange={(e) => setNote(e.target.value)} 
                 placeholder={t("notePlaceholder")} 
+                enterKeyHint="done"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.currentTarget.blur();
+                  }
+                }}
                 className="text-base font-bold px-3 py-0 border-2 border-black dark:border-white rounded-none shadow-none focus-visible:ring-0 focus-visible:shadow-[4px_4px_0px_0px_var(--color-safety-orange)] placeholder:text-muted-foreground/40 transition-all bg-white dark:bg-black box-border"
                 style={{ height: '56px' }}
               />

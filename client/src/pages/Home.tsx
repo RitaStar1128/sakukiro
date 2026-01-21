@@ -163,7 +163,7 @@ export default function Home() {
               key={amount}
               initial={{ scale: 0.98 }}
               animate={{ scale: 1 }}
-              className="neo-input h-24 flex items-center bg-white dark:bg-black transition-all group-focus-within:shadow-[6px_6px_0px_0px_var(--color-safety-orange)] px-4 relative gap-2"
+              className="neo-input h-24 flex items-center bg-white dark:bg-black transition-all group-focus-within:shadow-[6px_6px_0px_0px_var(--color-safety-orange)] px-4 py-0 relative gap-2"
             >
               {/* Currency Info - Fixed Width Area */}
               <div className="flex flex-col items-center justify-center w-12 shrink-0 pointer-events-none select-none">
@@ -174,7 +174,7 @@ export default function Home() {
               {/* Amount - Flexible Area with Auto-Scaling Font */}
               <div className="flex-1 flex items-center justify-end min-w-0 overflow-hidden h-full">
                 <span 
-                  className={`font-bold tracking-tighter text-right w-full leading-none ${amount ? "text-foreground" : "text-muted-foreground/20"}`}
+                  className={`flex items-center justify-end font-bold tracking-tighter text-right w-full h-full px-1 ${amount ? "text-foreground" : "text-muted-foreground/20"}`}
                   style={{
                     fontSize: (() => {
                       const len = amount.length;

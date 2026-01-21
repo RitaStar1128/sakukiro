@@ -173,8 +173,8 @@ export default function Home() {
 
               {/* Amount - Right Aligned */}
               <span className={`${
-                amount.length > 10 ? "text-4xl" : 
-                amount.length > 8 ? "text-5xl" : 
+                amount.length > 8 ? "text-4xl" : 
+                amount.length > 7 ? "text-5xl" : 
                 amount.length > 6 ? "text-6xl" : "text-7xl"
               } ${amount ? "text-foreground" : "text-muted-foreground/20"} transition-all duration-200 text-right w-full`}>
                 {amount ? (() => {

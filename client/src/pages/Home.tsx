@@ -163,36 +163,48 @@ export default function Home() {
               key={amount}
               initial={{ scale: 0.98 }}
               animate={{ scale: 1 }}
-              className="neo-input h-24 flex items-center justify-end text-7xl tracking-tighter overflow-hidden bg-white dark:bg-black transition-all group-focus-within:shadow-[6px_6px_0px_0px_var(--color-safety-orange)] pr-14 pl-16 relative"
+              className="neo-input h-24 flex items-center bg-white dark:bg-black transition-all group-focus-within:shadow-[6px_6px_0px_0px_var(--color-safety-orange)] px-4 relative gap-2"
             >
-              {/* Currency Info - Fixed Left */}
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 flex flex-col items-center pointer-events-none">
-                <span className="text-4xl font-bold text-muted-foreground leading-none">{getSymbol()}</span>
-                <span className="text-[10px] font-black text-muted-foreground/50 tracking-widest mt-1">{config.code}</span>
+              {/* Currency Info - Fixed Width Area */}
+              <div className="flex flex-col items-center justify-center w-12 shrink-0 pointer-events-none select-none">
+                <span className="text-3xl font-bold text-muted-foreground leading-none">{getSymbol()}</span>
+                <span className="text-[9px] font-black text-muted-foreground/50 tracking-widest mt-0.5">{config.code}</span>
               </div>
 
-              {/* Amount - Right Aligned */}
-              <span className={`${
-                amount.length > 8 ? "text-4xl" : 
-                amount.length > 7 ? "text-5xl" : 
-                amount.length > 6 ? "text-6xl" : "text-7xl"
-              } ${amount ? "text-foreground" : "text-muted-foreground/20"} transition-all duration-200 text-right w-full`}>
-                {amount ? (() => {
-                  const parts = amount.split('.');
-                  const integerPart = Number(parts[0]).toLocaleString();
-                  return parts.length > 1 ? `${integerPart}.${parts[1]}` : integerPart;
-                })() : "0"}
-              </span>
-              
-              {/* Clear Button inside Display */}
-              {amount && (
-                <button 
-                  onClick={handleClear}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-muted-foreground hover:text-foreground transition-colors z-10"
+              {/* Amount - Flexible Area with Auto-Scaling Font */}
+              <div className="flex-1 flex items-center justify-end min-w-0 overflow-hidden h-full">
+                <span 
+                  className={`font-bold tracking-tighter text-right w-full truncate ${amount ? "text-foreground" : "text-muted-foreground/20"}`}
+                  style={{
+                    fontSize: (() => {
+                      const len = amount.length;
+                      if (len > 12) return "2.5rem";
+                      if (len > 10) return "3rem";
+                      if (len > 8) return "3.75rem";
+                      if (len > 6) return "4.5rem";
+                      return "5rem"; // default max size
+                    })()
+                  }}
                 >
-                  <X className="w-6 h-6" strokeWidth={3} />
-                </button>
-              )}
+                  {amount ? (() => {
+                    const parts = amount.split('.');
+                    const integerPart = Number(parts[0]).toLocaleString();
+                    return parts.length > 1 ? `${integerPart}.${parts[1]}` : integerPart;
+                  })() : "0"}
+                </span>
+              </div>
+              
+              {/* Clear Button - Fixed Width Area */}
+              <div className="w-10 flex items-center justify-center shrink-0">
+                {amount && (
+                  <button 
+                    onClick={handleClear}
+                    className="p-2 text-muted-foreground hover:text-foreground transition-colors rounded-full hover:bg-muted/20"
+                  >
+                    <X className="w-6 h-6" strokeWidth={3} />
+                  </button>
+                )}
+              </div>
             </motion.div>
           </div>
 

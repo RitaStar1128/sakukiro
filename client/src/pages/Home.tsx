@@ -174,20 +174,15 @@ export default function Home() {
               {/* Amount - Flexible Area with Auto-Scaling Font */}
               <div className="flex-1 flex items-center justify-end min-w-0 overflow-hidden h-full">
                 <span 
-                  className={`font-bold tracking-tighter text-right w-full ${amount ? "text-foreground" : "text-muted-foreground/20"}`}
+                  className={`font-bold tracking-tighter text-right w-full leading-none ${amount ? "text-foreground" : "text-muted-foreground/20"}`}
                   style={{
                     fontSize: (() => {
                       const len = amount.length;
-                      // 1〜5桁: 4.5rem (最大)
-                      if (len <= 5) return "4.5rem";
-                      
-                      // 6〜9桁: 線形補間で滑らかに縮小
-                      // 5桁(4.5rem) -> 9桁(2.65rem)
-                      // 差分: 1.85rem / 4段階 = 0.4625rem/桁
-                      const size = 4.5 - ((len - 5) * 0.4625);
-                      
-                      // 9桁以上は最小サイズ2.65remで固定
-                      return `${Math.max(2.65, size)}rem`;
+                      if (len >= 9) return "2.5rem";
+                      if (len === 8) return "2.9rem";
+                      if (len === 7) return "3.25rem";
+                      if (len === 6) return "4rem";
+                      return "4.5rem";
                     })()
                   }}
                 >

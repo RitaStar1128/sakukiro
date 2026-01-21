@@ -94,8 +94,8 @@ export function SettingsModal() {
             </div>
           </div>
 
-          {/* Mobile Access Section */}
-          <div className="space-y-3">
+          {/* Mobile Access Section - Only visible on desktop */}
+          <div className="space-y-3 hidden sm:block">
             <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Mobile Access</h3>
             <button
               onClick={() => {

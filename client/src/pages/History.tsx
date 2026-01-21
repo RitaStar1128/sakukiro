@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
 import { ArrowLeft, Trash2, ShoppingBag, AlertTriangle, X, Download } from "lucide-react";
 import { toast } from "sonner";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useMotionValue, useTransform, PanInfo } from "framer-motion";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCurrency, CurrencyCode } from "@/contexts/CurrencyContext";
 
@@ -11,6 +11,7 @@ import { useCurrency, CurrencyCode } from "@/contexts/CurrencyContext";
 // - serial_position_effect: リスト表示において、最新のアイテム（上部）を強調。
 // - zeigarnik_effect: 削除時のアニメーション（スワイプアウトやフェードアウト）で、タスク完了（削除）を視覚的に明確にする。
 // - von_restorff_effect: 各カードのデザインを統一しつつ、金額を大きく表示して視認性を高める。
+// - haptic_feedback: スワイプ操作による直感的なインタラクションを提供。
 
 interface Record {
   id: string;
@@ -22,9 +23,104 @@ interface Record {
   currency?: CurrencyCode;
 }
 
+// Swipeable Item Component
+function HistoryItem({ 
+  record, 
+  index, 
+  onDelete, 
+  t, 
+  formatDate, 
+  availableCurrencies 
+}: { 
+  record: Record; 
+  index: number; 
+  onDelete: (id: string) => void; 
+  t: (key: string) => string; 
+  formatDate: (date: string) => string;
+  availableCurrencies: any;
+}) {
+  const x = useMotionValue(0);
+  const opacity = useTransform(x, [-100, -50, 0], [0, 1, 1]);
+  const bgOpacity = useTransform(x, [-100, 0], [1, 0]);
+  
+  const handleDragEnd = (_: any, info: PanInfo) => {
+    if (info.offset.x < -100) {
+      onDelete(record.id);
+    } else {
+      // Reset position if not swiped far enough
+      // Framer Motion handles the spring back automatically via dragConstraints
+    }
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+      transition={{ delay: index * 0.05 }}
+      className="relative mb-3"
+    >
+      {/* Background Layer (Delete Action) */}
+      <motion.div 
+        style={{ opacity: bgOpacity }}
+        className="absolute inset-0 bg-destructive flex items-center justify-end px-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]"
+      >
+        <Trash2 className="w-6 h-6 text-destructive-foreground" strokeWidth={2.5} />
+      </motion.div>
+
+      {/* Foreground Layer (Content) */}
+      <motion.div
+        style={{ x, opacity }}
+        drag="x"
+        dragConstraints={{ left: 0, right: 0 }}
+        dragElastic={{ left: 0.5, right: 0.05 }}
+        onDragEnd={handleDragEnd}
+        whileDrag={{ scale: 1.02, cursor: "grabbing" }}
+        className="relative neo-border bg-white dark:bg-black p-4 flex justify-between items-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] touch-pan-y"
+      >
+        <div className="flex flex-col gap-1 overflow-hidden pointer-events-none select-none">
+          <div className="flex items-baseline gap-2">
+            <span className="text-2xl font-black tracking-tighter">
+              {(() => {
+                const currencyCode = record.currency || "JPY";
+                const currencyConfig = availableCurrencies[currencyCode] || availableCurrencies["JPY"];
+                
+                return new Intl.NumberFormat(undefined, {
+                  style: "currency",
+                  currency: currencyCode,
+                  minimumFractionDigits: currencyConfig.decimals,
+                  maximumFractionDigits: currencyConfig.decimals,
+                }).format(record.amount);
+              })()}
+            </span>
+            <span className="text-[10px] font-black uppercase bg-primary text-primary-foreground px-1.5 py-0.5 border border-black dark:border-white">
+              {record.categoryKey ? t(record.categoryKey) : record.category}
+            </span>
+          </div>
+          <div className="flex flex-col">
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+              {formatDate(record.date)}
+            </span>
+            {record.note && (
+              <span className="text-sm font-bold mt-1 truncate">
+                {record.note}
+              </span>
+            )}
+          </div>
+        </div>
+        
+        {/* Visual indicator for swipe */}
+        <div className="text-muted-foreground/20 pl-2">
+          <ArrowLeft className="w-4 h-4" strokeWidth={3} />
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
 export default function HistoryPage() {
   const { t, formatDate } = useLanguage();
-  const { availableCurrencies, config } = useCurrency();
+  const { availableCurrencies } = useCurrency();
   const [records, setRecords] = useState<Record[]>([]);
   const [showWarning, setShowWarning] = useState(false);
   const [_, setLocation] = useLocation();
@@ -35,7 +131,6 @@ export default function HistoryPage() {
       setRecords(JSON.parse(storedData));
     }
 
-    // Check if warning has been dismissed
     const warningDismissed = localStorage.getItem("kaimono_warning_dismissed");
     if (!warningDismissed) {
       setShowWarning(true);
@@ -51,7 +146,10 @@ export default function HistoryPage() {
     const newRecords = records.filter((r) => r.id !== id);
     setRecords(newRecords);
     localStorage.setItem("kaimono_records", JSON.stringify(newRecords));
-    // toast.success(t("delete")); // 削除通知を廃止し、リストからの消失アニメーションのみとする
+    // Haptic feedback if available
+    if (navigator.vibrate) {
+      navigator.vibrate(50);
+    }
   };
 
   const handleExportCSV = () => {
@@ -60,14 +158,10 @@ export default function HistoryPage() {
       return;
     }
 
-    // CSV Header
     const headers = ["Date", "Amount", "Currency", "Category", "Note"];
-    
-    // CSV Rows
     const rows = records.map(record => {
       const date = new Date(record.date).toLocaleString();
       const category = record.categoryKey ? t(record.categoryKey) : record.category;
-      // Escape quotes in note
       const note = record.note ? `"${record.note.replace(/"/g, '""')}"` : "";
       
       return [
@@ -89,8 +183,6 @@ export default function HistoryPage() {
     link.click();
     document.body.removeChild(link);
   };
-
-
 
   return (
     <motion.div 
@@ -123,7 +215,7 @@ export default function HistoryPage() {
         )}
       </header>
 
-      <main className="flex-1 max-w-md mx-auto w-full p-4">
+      <main className="flex-1 max-w-md mx-auto w-full p-4 overflow-x-hidden">
         <AnimatePresence>
           {showWarning && (
             <motion.div
@@ -153,57 +245,18 @@ export default function HistoryPage() {
             <p className="text-lg font-bold tracking-widest uppercase">{t("noRecords")}</p>
           </div>
         ) : (
-          <div className="flex flex-col gap-3 pb-8">
-            <AnimatePresence>
+          <div className="flex flex-col pb-8">
+            <AnimatePresence mode="popLayout">
               {records.map((record, index) => (
-                <motion.div 
-                  key={record.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, height: 0, marginBottom: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                  className="neo-border bg-white dark:bg-black p-4 flex justify-between items-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]"
-                >
-                  <div className="flex flex-col gap-1 overflow-hidden">
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-2xl font-black tracking-tighter">
-                        {(() => {
-                          // Use record's currency if available, otherwise fallback to current config or default
-                          const currencyCode = record.currency || "JPY";
-                          const currencyConfig = availableCurrencies[currencyCode] || availableCurrencies["JPY"];
-                          
-                          return new Intl.NumberFormat(undefined, {
-                            style: "currency",
-                            currency: currencyCode,
-                            minimumFractionDigits: currencyConfig.decimals,
-                            maximumFractionDigits: currencyConfig.decimals,
-                          }).format(record.amount);
-                        })()}
-                      </span>
-                      <span className="text-[10px] font-black uppercase bg-primary text-primary-foreground px-1.5 py-0.5 border border-black dark:border-white">
-                        {record.categoryKey ? t(record.categoryKey) : record.category}
-                      </span>
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                        {formatDate(record.date)}
-                      </span>
-                      {record.note && (
-                        <span className="text-sm font-bold mt-1 truncate">
-                          {record.note}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleDelete(record.id)}
-                    className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-none w-10 h-10 ml-2 shrink-0 transition-colors"
-                  >
-                    <Trash2 className="w-5 h-5" strokeWidth={2.5} />
-                  </Button>
-                </motion.div>
+                <HistoryItem 
+                  key={record.id} 
+                  record={record} 
+                  index={index} 
+                  onDelete={handleDelete}
+                  t={t}
+                  formatDate={formatDate}
+                  availableCurrencies={availableCurrencies}
+                />
               ))}
             </AnimatePresence>
           </div>

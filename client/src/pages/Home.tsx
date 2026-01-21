@@ -163,15 +163,25 @@ export default function Home() {
               key={amount}
               initial={{ scale: 0.98 }}
               animate={{ scale: 1 }}
-              className="neo-input h-24 flex items-end justify-end text-7xl tracking-tighter overflow-hidden bg-white dark:bg-black transition-all group-focus-within:shadow-[6px_6px_0px_0px_var(--color-safety-orange)] pr-14 relative"
+              className="neo-input h-24 flex items-center justify-center text-7xl tracking-tighter overflow-hidden bg-white dark:bg-black transition-all group-focus-within:shadow-[6px_6px_0px_0px_var(--color-safety-orange)] pr-14 relative"
             >
               <div className="absolute top-2 right-2 flex flex-col items-end pointer-events-none">
                 <span className="text-xs font-black text-muted-foreground/50 tracking-widest">{config.code}</span>
               </div>
-              <span className="text-4xl mr-2 self-end mb-2 font-bold text-muted-foreground">{getSymbol()}</span>
-              <span className={amount ? "text-foreground" : "text-muted-foreground/20"}>
-                {amount || "0"}
-              </span>
+              <div className="flex items-baseline justify-center w-full pl-4">
+                <span className="text-4xl mr-2 font-bold text-muted-foreground">{getSymbol()}</span>
+                <span className={`${
+                  amount.length > 10 ? "text-4xl" : 
+                  amount.length > 8 ? "text-5xl" : 
+                  amount.length > 6 ? "text-6xl" : "text-7xl"
+                } ${amount ? "text-foreground" : "text-muted-foreground/20"} transition-all duration-200`}>
+                  {amount ? (() => {
+                    const parts = amount.split('.');
+                    const integerPart = Number(parts[0]).toLocaleString();
+                    return parts.length > 1 ? `${integerPart}.${parts[1]}` : integerPart;
+                  })() : "0"}
+                </span>
+              </div>
               
               {/* Clear Button inside Display */}
               {amount && (

@@ -178,12 +178,16 @@ export default function Home() {
                   style={{
                     fontSize: (() => {
                       const len = amount.length;
-                      // カンマを含めた表示幅と、Flexboxで狭くなったエリアを考慮して調整
-                      if (len > 11) return "2.25rem"; // 12桁〜 (例: 100,000,000,000)
-                      if (len > 9) return "2.75rem";  // 10桁〜 (例: 1,000,000,000)
-                      if (len > 7) return "3.25rem";  // 8桁〜 (例: 10,000,000)
-                      if (len > 5) return "4rem";     // 6桁〜 (例: 100,000)
-                      return "4.5rem";                // 〜5桁 (例: 10,000)
+                      // 1〜5桁: 4.5rem (最大)
+                      if (len <= 5) return "4.5rem";
+                      
+                      // 6〜9桁: 線形補間で滑らかに縮小
+                      // 5桁(4.5rem) -> 9桁(2.65rem)
+                      // 差分: 1.85rem / 4段階 = 0.4625rem/桁
+                      const size = 4.5 - ((len - 5) * 0.4625);
+                      
+                      // 9桁以上は最小サイズ2.65remで固定
+                      return `${Math.max(2.65, size)}rem`;
                     })()
                   }}
                 >

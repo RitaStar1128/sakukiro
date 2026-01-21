@@ -163,25 +163,26 @@ export default function Home() {
               key={amount}
               initial={{ scale: 0.98 }}
               animate={{ scale: 1 }}
-              className="neo-input h-24 flex items-center justify-center text-7xl tracking-tighter overflow-hidden bg-white dark:bg-black transition-all group-focus-within:shadow-[6px_6px_0px_0px_var(--color-safety-orange)] pr-14 relative"
+              className="neo-input h-24 flex items-center justify-end text-7xl tracking-tighter overflow-hidden bg-white dark:bg-black transition-all group-focus-within:shadow-[6px_6px_0px_0px_var(--color-safety-orange)] pr-14 pl-20 relative"
             >
-              <div className="absolute top-2 right-2 flex flex-col items-end pointer-events-none">
-                <span className="text-xs font-black text-muted-foreground/50 tracking-widest">{config.code}</span>
+              {/* Currency Info - Fixed Left */}
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 flex flex-col items-center pointer-events-none">
+                <span className="text-4xl font-bold text-muted-foreground leading-none">{getSymbol()}</span>
+                <span className="text-[10px] font-black text-muted-foreground/50 tracking-widest mt-1">{config.code}</span>
               </div>
-              <div className="flex items-baseline justify-center w-full pl-4">
-                <span className="text-4xl mr-2 font-bold text-muted-foreground">{getSymbol()}</span>
-                <span className={`${
-                  amount.length > 10 ? "text-4xl" : 
-                  amount.length > 8 ? "text-5xl" : 
-                  amount.length > 6 ? "text-6xl" : "text-7xl"
-                } ${amount ? "text-foreground" : "text-muted-foreground/20"} transition-all duration-200`}>
-                  {amount ? (() => {
-                    const parts = amount.split('.');
-                    const integerPart = Number(parts[0]).toLocaleString();
-                    return parts.length > 1 ? `${integerPart}.${parts[1]}` : integerPart;
-                  })() : "0"}
-                </span>
-              </div>
+
+              {/* Amount - Right Aligned */}
+              <span className={`${
+                amount.length > 10 ? "text-4xl" : 
+                amount.length > 8 ? "text-5xl" : 
+                amount.length > 6 ? "text-6xl" : "text-7xl"
+              } ${amount ? "text-foreground" : "text-muted-foreground/20"} transition-all duration-200 text-right w-full`}>
+                {amount ? (() => {
+                  const parts = amount.split('.');
+                  const integerPart = Number(parts[0]).toLocaleString();
+                  return parts.length > 1 ? `${integerPart}.${parts[1]}` : integerPart;
+                })() : "0"}
+              </span>
               
               {/* Clear Button inside Display */}
               {amount && (

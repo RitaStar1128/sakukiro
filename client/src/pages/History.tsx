@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
-import { ArrowLeft, Trash2, Download, Edit2 } from "lucide-react";
+import { ArrowLeft, Trash2, Download, Edit2, ShoppingBag } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence, useMotionValue, useTransform, PanInfo } from "framer-motion";
 import { useLanguage } from "@/contexts/LanguageContext";

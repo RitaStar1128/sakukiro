@@ -45,6 +45,13 @@ export default function Home() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [fontSize, setFontSize] = useState('4.5rem');
   
+  // 表示用のフォーマット済みテキストを計算
+  const displayText = amount ? (() => {
+    const parts = amount.split('.');
+    const integerPart = Number(parts[0]).toLocaleString();
+    return parts.length > 1 ? `${integerPart}.${parts[1]}` : integerPart;
+  })() : "0";
+
   // 初回訪問判定
   useEffect(() => {
     const hasVisited = localStorage.getItem("has_visited_sakukiro");
@@ -58,7 +65,7 @@ export default function Home() {
     document.title = "サクキロ (SAKUKIRO) - 最速の支出管理・家計簿アプリ";
   }, []);
 
-  // フォントサイズ自動調整ロジック
+  // フォントサイズ自動調整ロジック（改良版）
   useEffect(() => {
     const adjustFontSize = () => {
       if (!spanRef.current || !containerRef.current) return;
@@ -66,18 +73,22 @@ export default function Home() {
       const container = containerRef.current;
       const span = spanRef.current;
       const containerWidth = container.clientWidth - 8; // paddingを考慮
+      const containerHeight = container.clientHeight;
       
       // 初期フォントサイズから開始
       let size = 72; // 4.5rem相当
       span.style.fontSize = `${size}px`;
       
-      // テキストが収まるまでフォントサイズを減らす
-      while (span.scrollWidth > containerWidth && size > 24) {
-        size -= 2;
-        span.style.fontSize = `${size}px`;
-      }
-      
-      setFontSize(`${size}px`);
+      // 少し待ってからレイアウトが確定した後に計測
+      requestAnimationFrame(() => {
+        // テキストが収まるまでフォントサイズを減らす
+        while ((span.scrollWidth > containerWidth || span.scrollHeight > containerHeight) && size > 20) {
+          size -= 1;
+          span.style.fontSize = `${size}px`;
+        }
+        
+        setFontSize(`${size}px`);
+      });
     };
     
     adjustFontSize();
@@ -89,7 +100,7 @@ export default function Home() {
     }
     
     return () => resizeObserver.disconnect();
-  }, [amount]);
+  }, [displayText]); // amountではなくdisplayTextに依存
 
   // テンキー入力処理
   const handleNumClick = (num: string) => {
@@ -216,11 +227,7 @@ export default function Home() {
                   className={`flex items-center justify-end font-bold tracking-tighter text-right w-full h-full px-1 whitespace-nowrap ${amount ? "text-foreground" : "text-muted-foreground/20"}`}
                   style={{ fontSize }}
                 >
-                  {amount ? (() => {
-                    const parts = amount.split('.');
-                    const integerPart = Number(parts[0]).toLocaleString();
-                    return parts.length > 1 ? `${integerPart}.${parts[1]}` : integerPart;
-                  })() : "0"}
+                  {displayText}
                 </span>
               </div>
               

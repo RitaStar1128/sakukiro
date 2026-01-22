@@ -28,17 +28,19 @@ export function HelpModal({ isOpen, onClose }: HelpModalProps) {
           >
             {/* Header */}
             <div className="p-4 border-b-2 border-black dark:border-white flex justify-between items-center sticky top-0 bg-white dark:bg-black z-10">
-              <div className="flex items-center gap-2">
-                <HelpCircle className="w-6 h-6 text-primary" strokeWidth={3} />
-                <h2 className="text-xl font-black uppercase tracking-tighter">
+              <div className="flex items-center gap-3">
+                <div className="bg-primary p-1 border-2 border-black dark:border-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)]">
+                  <HelpCircle className="w-6 h-6 text-primary-foreground" strokeWidth={3} />
+                </div>
+                <h2 className="text-2xl font-black uppercase tracking-tighter transform translate-y-[1px]">
                   {language === 'ja' ? 'サクキロについて' : 'About SAKUKIRO'}
                 </h2>
               </div>
               <button 
                 onClick={onClose}
-                className="p-2 hover:bg-accent rounded-sm transition-colors border-2 border-transparent hover:border-black dark:hover:border-white"
+                className="w-10 h-10 flex items-center justify-center bg-destructive text-destructive-foreground border-2 border-black dark:border-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] hover:translate-y-[1px] hover:translate-x-[1px] hover:shadow-none transition-all active:bg-destructive/90"
               >
-                <X className="w-6 h-6" strokeWidth={3} />
+                <X className="w-6 h-6" strokeWidth={4} />
               </button>
             </div>
 

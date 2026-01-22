@@ -159,14 +159,19 @@ export const PWAInstallPrompt = forwardRef<PWAInstallPromptHandle>((_, ref) => {
               className="bg-white dark:bg-black border-t-4 sm:border-4 border-black dark:border-white w-full max-w-md max-h-[90vh] overflow-y-auto shadow-[0px_-4px_0px_0px_rgba(0,0,0,0.1)] sm:shadow-[8px_8px_0px_0px_var(--color-safety-orange)] flex flex-col"
             >
               <div className="p-4 border-b-2 border-black dark:border-white flex justify-between items-center sticky top-0 bg-white dark:bg-black z-10">
-                <h3 className="text-lg font-black uppercase tracking-tighter">
-                  {language === 'ja' ? 'ホーム画面への追加方法' : 'Add to Home Screen'}
-                </h3>
+                <div className="flex items-center gap-3">
+                  <div className="bg-primary p-1 border-2 border-black dark:border-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)]">
+                    <Smartphone className="w-6 h-6 text-primary-foreground" strokeWidth={3} />
+                  </div>
+                  <h3 className="text-2xl font-black uppercase tracking-tighter transform translate-y-[1px]">
+                    {language === 'ja' ? 'ホーム画面への追加' : 'Add to Home'}
+                  </h3>
+                </div>
                 <button 
                   onClick={() => setShowModal(false)}
-                  className="p-2 hover:bg-accent rounded-sm transition-colors border-2 border-transparent hover:border-black dark:hover:border-white"
+                  className="w-10 h-10 flex items-center justify-center bg-destructive text-destructive-foreground border-2 border-black dark:border-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] hover:translate-y-[1px] hover:translate-x-[1px] hover:shadow-none transition-all active:bg-destructive/90"
                 >
-                  <X className="w-6 h-6" strokeWidth={3} />
+                  <X className="w-6 h-6" strokeWidth={4} />
                 </button>
               </div>
 

@@ -20,8 +20,13 @@ export function SettingsModal() {
         </Button>
       </DialogTrigger>
       <DialogContent className="neo-border bg-background p-0 gap-0 max-w-sm w-[90vw] overflow-hidden shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] border-2 border-black dark:border-white sm:rounded-none">
-        <DialogHeader className="p-4 border-b-2 border-black dark:border-white bg-accent">
-          <DialogTitle className="text-xl font-black uppercase tracking-tighter">Settings</DialogTitle>
+        <DialogHeader className="p-4 border-b-2 border-black dark:border-white bg-white dark:bg-black sticky top-0 z-10">
+          <div className="flex items-center gap-3">
+            <div className="bg-primary p-1 border-2 border-black dark:border-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)]">
+              <Settings className="w-6 h-6 text-primary-foreground" strokeWidth={3} />
+            </div>
+            <DialogTitle className="text-2xl font-black uppercase tracking-tighter transform translate-y-[1px]">Settings</DialogTitle>
+          </div>
         </DialogHeader>
         
         <div className="p-6 space-y-8">

@@ -65,28 +65,27 @@ export default function Home() {
     document.title = "サクキロ (SAKUKIRO) - 最速の支出管理・家計簿アプリ";
   }, []);
 
-  // フォントサイズ自動調整ロジック（改良版）
+  // フォントサイズ自動調整ロジック（ログ出力付き・高さ判定除外）
   useEffect(() => {
     const adjustFontSize = () => {
       if (!spanRef.current || !containerRef.current) return;
       
       const container = containerRef.current;
       const span = spanRef.current;
-      const containerWidth = container.clientWidth - 8; // paddingを考慮
-      const containerHeight = container.clientHeight;
+      const containerWidth = container.clientWidth - 8;
       
-      // 初期フォントサイズから開始
-      let size = 72; // 4.5rem相当
+      console.log('調整開始:', displayText, 'コンテナ幅:', containerWidth);
+      
+      let size = 72;
       span.style.fontSize = `${size}px`;
       
-      // 少し待ってからレイアウトが確定した後に計測
       requestAnimationFrame(() => {
-        // テキストが収まるまでフォントサイズを減らす
-        while ((span.scrollWidth > containerWidth || span.scrollHeight > containerHeight) && size > 20) {
+        while (span.scrollWidth > containerWidth && size > 20) {
           size -= 1;
           span.style.fontSize = `${size}px`;
         }
         
+        console.log('最終サイズ:', size, 'スクロール幅:', span.scrollWidth);
         setFontSize(`${size}px`);
       });
     };
@@ -100,7 +99,7 @@ export default function Home() {
     }
     
     return () => resizeObserver.disconnect();
-  }, [displayText]); // amountではなくdisplayTextに依存
+  }, [displayText]);
 
   // テンキー入力処理
   const handleNumClick = (num: string) => {

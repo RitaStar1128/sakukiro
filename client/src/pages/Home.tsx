@@ -2,8 +2,8 @@ import { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useLocation } from "wouter";
-import { History, ShoppingBag, Delete, Check, X } from "lucide-react";
+import { useLocation, useRoute } from "wouter";
+import { History, ShoppingBag, Delete, Check, X, ArrowLeft, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -11,6 +11,16 @@ import { useCurrency } from "@/contexts/CurrencyContext";
 import { SettingsModal } from "@/components/SettingsModal";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { HelpModal } from "@/components/HelpModal";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 import { HelpCircle } from "lucide-react";
 
@@ -38,7 +48,11 @@ export default function Home() {
   const [note, setNote] = useState("");
   const [isSaved, setIsSaved] = useState(false);
   const [_, setLocation] = useLocation();
+  const [match, params] = useRoute("/edit/:id");
+  const isEditMode = match && !!params?.id;
+  const [originalDate, setOriginalDate] = useState<string | null>(null);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   
   // フォントサイズ調整用のRefとState
   const spanRef = useRef<HTMLSpanElement>(null);
@@ -62,13 +76,37 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    document.title = "サクキロ (SAKUKIRO) - 最速の支出管理・家計簿アプリ";
-  }, []);
+    document.title = isEditMode 
+      ? "記録の編集 - サクキロ" 
+      : "サクキロ (SAKUKIRO) - 最速の支出管理・家計簿アプリ";
+  }, [isEditMode]);
 
-  // 設定で通貨を変更したときに入力中の金額をリセット
+  // 編集モード時の初期データ読み込み
   useEffect(() => {
-    setAmount("");
-  }, [currency]);
+    if (isEditMode && params?.id) {
+      const storedData = localStorage.getItem("kaimono_records");
+      if (storedData) {
+        const records = JSON.parse(storedData);
+        const record = records.find((r: any) => r.id === params.id);
+        if (record) {
+          setAmount(record.amount.toString());
+          setCategoryKey(record.categoryKey);
+          setNote(record.note || "");
+          setOriginalDate(record.date);
+        } else {
+          toast.error("記録が見つかりません");
+          setLocation("/history");
+        }
+      }
+    }
+  }, [isEditMode, params?.id, setLocation]);
+
+  // 設定で通貨を変更したときに入力中の金額をリセット（新規作成時のみ）
+  useEffect(() => {
+    if (!isEditMode) {
+      setAmount("");
+    }
+  }, [currency, isEditMode]);
 
   // フォントサイズ自動調整ロジック（桁数ベース＋フィット調整）
   useLayoutEffect(() => {
@@ -152,31 +190,72 @@ export default function Home() {
     setAmount("");
   };
 
+  const handleDeleteRecord = () => {
+    if (!params?.id) return;
+    
+    const storedData = localStorage.getItem("kaimono_records");
+    if (storedData) {
+      const records = JSON.parse(storedData);
+      const newRecords = records.filter((r: any) => r.id !== params.id);
+      localStorage.setItem("kaimono_records", JSON.stringify(newRecords));
+      toast.success("記録を削除しました");
+      setLocation("/history");
+    }
+  };
+
   const handleSubmit = () => {
+    // 金額が0または空の場合は削除確認
     if (!amount || parseFloat(amount) === 0) {
-      toast.error(t("inputAmount"));
+      if (isEditMode) {
+        setShowDeleteConfirm(true);
+      } else {
+        toast.error(t("inputAmount"));
+      }
       return;
     }
 
-    const newRecord = {
-      id: crypto.randomUUID(),
-      amount: parseFloat(amount),
-      categoryKey, // 翻訳済み文字列ではなくキーを保存する
-      note,
-      date: new Date().toISOString(),
-      currency: config.code, // 記録時の通貨を保存
-    };
-
     const storedData = localStorage.getItem("kaimono_records");
-    const records = storedData ? JSON.parse(storedData) : [];
-    localStorage.setItem("kaimono_records", JSON.stringify([newRecord, ...records]));
+    let records = storedData ? JSON.parse(storedData) : [];
 
-    // ボタン内フィードバックを表示
-    setIsSaved(true);
-    setTimeout(() => setIsSaved(false), 1000);
-    
-    setAmount("");
-    setNote("");
+    if (isEditMode && params?.id) {
+      // 更新処理
+      records = records.map((r: any) => {
+        if (r.id === params.id) {
+          return {
+            ...r,
+            amount: parseFloat(amount),
+            categoryKey,
+            note,
+            // 日付は変更しない（必要なら編集可能にするが、今回は新規入力画面ベースなので維持）
+            date: originalDate || r.date,
+          };
+        }
+        return r;
+      });
+      
+      localStorage.setItem("kaimono_records", JSON.stringify(records));
+      toast.success("記録を更新しました");
+      setLocation("/history");
+    } else {
+      // 新規作成処理
+      const newRecord = {
+        id: crypto.randomUUID(),
+        amount: parseFloat(amount),
+        categoryKey, // 翻訳済み文字列ではなくキーを保存する
+        note,
+        date: new Date().toISOString(),
+        currency: config.code, // 記録時の通貨を保存
+      };
+      
+      localStorage.setItem("kaimono_records", JSON.stringify([newRecord, ...records]));
+
+      // ボタン内フィードバックを表示
+      setIsSaved(true);
+      setTimeout(() => setIsSaved(false), 1000);
+      
+      setAmount("");
+      setNote("");
+    }
   };
 
   return (
@@ -188,35 +267,82 @@ export default function Home() {
     >
       <PWAInstallPrompt />
       <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
+      
+      {/* 削除確認ダイアログ */}
+      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <AlertDialogContent className="border-2 border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] rounded-none">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="font-black uppercase">記録を削除しますか？</AlertDialogTitle>
+            <AlertDialogDescription className="font-bold text-muted-foreground">
+              金額が0になっています。この記録を削除してもよろしいですか？
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="border-2 border-black dark:border-white rounded-none font-bold hover:bg-accent hover:text-accent-foreground">キャンセル</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteRecord} className="bg-destructive text-destructive-foreground border-2 border-black dark:border-white rounded-none font-bold shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] hover:translate-y-[1px] hover:translate-x-[1px] hover:shadow-none transition-all">削除する</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       {/* Header - Minimal & Accessible */}
       <header className="flex justify-between items-center px-4 py-3 border-b-2 border-black dark:border-white bg-white dark:bg-black shrink-0 z-20">
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-primary flex items-center justify-center border-2 border-black dark:border-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)]">
-              <ShoppingBag className="w-4 h-4 text-primary-foreground" strokeWidth={3} />
+          {isEditMode ? (
+            <div className="flex items-center gap-2 w-full justify-center relative">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={() => setLocation("/history")}
+                className="absolute left-0 w-8 h-8 rounded-none border-2 border-black dark:border-white hover:bg-accent hover:text-accent-foreground transition-all active:translate-y-1"
+              >
+                <ArrowLeft className="w-4 h-4" strokeWidth={3} />
+              </Button>
+              <h1 className="text-lg font-black tracking-tighter uppercase ml-10">EDIT RECORD</h1>
             </div>
-            <h1 className="text-lg font-black tracking-tighter uppercase">SAKUKIRO</h1>
-          </div>
-          <button
-            onClick={() => setIsHelpOpen(true)}
-            className="w-8 h-8 flex items-center justify-center border-2 border-black dark:border-white bg-white dark:bg-black hover:bg-accent transition-colors shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] active:translate-y-[1px] active:translate-x-[1px] active:shadow-none"
-            aria-label="Help"
-          >
-            <HelpCircle className="w-4 h-4" strokeWidth={3} />
-          </button>
+          ) : (
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-primary flex items-center justify-center border-2 border-black dark:border-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)]">
+                <ShoppingBag className="w-4 h-4 text-primary-foreground" strokeWidth={3} />
+              </div>
+              <h1 className="text-lg font-black tracking-tighter uppercase">SAKUKIRO</h1>
+            </div>
+          )}
+          
+          {!isEditMode && (
+            <button
+              onClick={() => setIsHelpOpen(true)}
+              className="w-8 h-8 flex items-center justify-center border-2 border-black dark:border-white bg-white dark:bg-black hover:bg-accent transition-colors shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] active:translate-y-[1px] active:translate-x-[1px] active:shadow-none"
+              aria-label="Help"
+            >
+              <HelpCircle className="w-4 h-4" strokeWidth={3} />
+            </button>
+          )}
         </div>
 
+        {!isEditMode && (
           <div className="flex items-center gap-2">
             <SettingsModal />
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => setLocation("/history")}
+              className="w-10 h-10 rounded-none border-2 border-black dark:border-white hover:bg-accent hover:text-accent-foreground transition-all active:translate-y-1"
+            >
+              <History className="w-6 h-6" strokeWidth={2.5} />
+            </Button>
+          </div>
+        )}
+        
+        {isEditMode && (
           <Button 
             variant="ghost" 
             size="icon" 
-            onClick={() => setLocation("/history")}
-            className="w-10 h-10 rounded-none border-2 border-black dark:border-white hover:bg-accent hover:text-accent-foreground transition-all active:translate-y-1"
+            onClick={() => setShowDeleteConfirm(true)}
+            className="w-10 h-10 rounded-none border-2 border-black dark:border-white hover:bg-destructive hover:text-destructive-foreground transition-all active:translate-y-1 text-destructive"
           >
-            <History className="w-6 h-6" strokeWidth={2.5} />
+            <Trash2 className="w-5 h-5" strokeWidth={2.5} />
           </Button>
-        </div>
+        )}
       </header>
 
       <main className="flex-1 flex flex-col w-full max-w-md mx-auto relative">
@@ -288,78 +414,85 @@ export default function Home() {
               <label className="text-xs font-black uppercase tracking-widest pl-1">{t("note")}</label>
                 <Input 
                 value={note} 
-                onChange={(e) => setNote(e.target.value)} 
-                placeholder={t("notePlaceholder")} 
-                enterKeyHint="done"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.currentTarget.blur();
-                  }
-                }}
-                className="text-base font-bold px-3 py-0 border-2 border-black dark:border-white rounded-none shadow-none focus-visible:ring-0 focus-visible:shadow-[4px_4px_0px_0px_var(--color-safety-orange)] placeholder:text-muted-foreground/40 transition-all bg-white dark:bg-black box-border"
+                onChange={(e) => setNote(e.target.value)}
+                placeholder={t("notePlaceholder")}
+                className="w-full text-base font-bold px-3 py-0 border-2 border-black dark:border-white rounded-none shadow-none focus-visible:ring-0 focus:shadow-[4px_4px_0px_0px_var(--color-safety-orange)] transition-all bg-white dark:bg-black box-border"
                 style={{ height: '56px' }}
               />
             </div>
           </div>
         </div>
 
-        {/* Lower Section: Keypad & Action - The Thumb Zone */}
-        <div className="flex-1 flex flex-col p-4 pt-2 gap-3 min-h-0">
-          <div className="flex-1 grid grid-cols-3 gap-3">
-            {[7, 8, 9, 4, 5, 6, 1, 2, 3].map((num) => (
-              <motion.button
+        {/* Keypad Area - Maximized for Fitts's Law */}
+        <div className="flex-1 grid grid-cols-4 gap-0 p-0 mt-2 border-t-2 border-black dark:border-white bg-white dark:bg-black">
+          {/* Main Numbers 1-9 */}
+          <div className="col-span-3 grid grid-cols-3 grid-rows-4">
+            {["7", "8", "9", "4", "5", "6", "1", "2", "3"].map((num) => (
+              <button
                 key={num}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => handleNumClick(num.toString())}
-                className="neo-btn bg-white dark:bg-black text-3xl hover:bg-gray-50 dark:hover:bg-gray-900 active:translate-y-[2px] active:translate-x-[2px] active:shadow-none flex items-center justify-center rounded-sm"
+                onClick={() => handleNumClick(num)}
+                className="h-full w-full text-3xl font-black border-r-2 border-b-2 border-black dark:border-white active:bg-accent active:text-accent-foreground transition-colors flex items-center justify-center"
               >
                 {num}
-              </motion.button>
+              </button>
             ))}
-            
-            {/* Bottom Row of Keypad */}
-            <button
-              onClick={() => handleNumClick(".")}
-              className="neo-btn bg-white dark:bg-black text-3xl hover:bg-gray-50 dark:hover:bg-gray-900 active:translate-y-[2px] active:translate-x-[2px] active:shadow-none flex items-center justify-center rounded-sm pb-2"
-              disabled={config.decimals === 0} // 小数点なし通貨の場合は無効化
-            >
-              <span className="font-black">.</span>
-            </button>
+            {/* Bottom Row: 0, ., Delete */}
             <button
               onClick={() => handleNumClick("0")}
-              className="neo-btn bg-white dark:bg-black text-3xl hover:bg-gray-50 dark:hover:bg-gray-900 active:translate-y-[2px] active:translate-x-[2px] active:shadow-none flex items-center justify-center rounded-sm"
+              className="col-span-2 h-full w-full text-3xl font-black border-r-2 border-b-2 border-black dark:border-white active:bg-accent active:text-accent-foreground transition-colors flex items-center justify-center"
             >
               0
             </button>
             <button
-              onClick={handleDelete}
-              className="neo-btn bg-muted text-muted-foreground hover:bg-muted/80 active:translate-y-[2px] active:translate-x-[2px] active:shadow-none flex items-center justify-center rounded-sm"
+              onClick={() => handleNumClick(".")}
+              className="h-full w-full text-3xl font-black border-r-2 border-b-2 border-black dark:border-white active:bg-accent active:text-accent-foreground transition-colors flex items-center justify-center pb-2"
             >
-              <Delete className="w-7 h-7" strokeWidth={2.5} />
+              .
             </button>
           </div>
 
-          {/* Confirm Button - Massive & Satisfying */}
-          <motion.button 
-            whileTap={{ scale: 0.98, y: 4, x: 4, boxShadow: "0px 0px 0px 0px rgba(0,0,0,0)" }}
-            onClick={handleSubmit}
-            disabled={isSaved}
-            className={`h-20 shrink-0 text-2xl font-black uppercase tracking-[0.2em] border-2 border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] transition-all w-full rounded-sm flex items-center justify-center gap-3 ${
-              isSaved 
-                ? "bg-green-500 text-white border-green-700" 
-                : "bg-primary text-primary-foreground hover:bg-primary hover:brightness-110"
-            }`}
-          >
-            {isSaved ? (
-              <>
-                {t("saved")}! <Check className="w-8 h-8" strokeWidth={4} />
-              </>
-            ) : (
-              <>
-                {t("confirm")} <Check className="w-8 h-8" strokeWidth={4} />
-              </>
-            )}
-          </motion.button>
+          {/* Right Column: Delete & Submit */}
+          <div className="col-span-1 grid grid-rows-2">
+            <button
+              onClick={handleDelete}
+              className="h-full w-full border-b-2 border-black dark:border-white bg-muted/30 active:bg-destructive active:text-destructive-foreground transition-colors flex items-center justify-center"
+            >
+              <Delete className="w-8 h-8" strokeWidth={2.5} />
+            </button>
+            <button
+              onClick={handleSubmit}
+              className={`h-full w-full flex flex-col items-center justify-center gap-1 transition-all relative overflow-hidden ${
+                isSaved 
+                  ? "bg-green-500 text-white" 
+                  : "bg-primary text-primary-foreground active:opacity-90"
+              }`}
+            >
+              <AnimatePresence mode="wait">
+                {isSaved ? (
+                  <motion.div
+                    key="saved"
+                    initial={{ scale: 0.5, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.5, opacity: 0 }}
+                    className="flex flex-col items-center"
+                  >
+                    <Check className="w-10 h-10" strokeWidth={4} />
+                    <span className="text-xs font-black uppercase tracking-widest">SAVED</span>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="submit"
+                    initial={{ scale: 0.5, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.5, opacity: 0 }}
+                    className="flex flex-col items-center"
+                  >
+                    <span className="text-xl font-black uppercase tracking-widest">{isEditMode ? "UPDATE" : "ENTER"}</span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </button>
+          </div>
         </div>
       </main>
     </motion.div>

@@ -1,17 +1,11 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
-import { ArrowLeft, Trash2, ShoppingBag, AlertTriangle, X, Download, Edit2, Save, Calendar as CalendarIcon } from "lucide-react";
+import { ArrowLeft, Trash2, Download, Edit2 } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence, useMotionValue, useTransform, PanInfo } from "framer-motion";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCurrency, CurrencyCode } from "@/contexts/CurrencyContext";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { format } from "date-fns";
 
 // UX_RATIONALE:
 // - serial_position_effect: リスト表示において、最新のアイテム（上部）を強調。
@@ -43,7 +37,7 @@ function HistoryItem({
   record: Record; 
   index: number; 
   onDelete: (id: string) => void; 
-  onEdit: (record: Record) => void;
+  onEdit: (id: string) => void;
   t: (key: string) => string; 
   formatDate: (date: string) => string;
   availableCurrencies: any;
@@ -85,7 +79,7 @@ function HistoryItem({
         dragElastic={{ left: 0.5, right: 0.05 }}
         onDragEnd={handleDragEnd}
         whileDrag={{ scale: 1.02, cursor: "grabbing" }}
-        onClick={() => onEdit(record)}
+        onClick={() => onEdit(record.id)}
         className="relative neo-border bg-white dark:bg-black p-4 flex justify-between items-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] touch-pan-y cursor-pointer active:scale-[0.98] transition-transform"
       >
         <div className="flex flex-col gap-1 overflow-hidden pointer-events-none select-none">
@@ -132,32 +126,14 @@ export default function HistoryPage() {
   const { t, formatDate } = useLanguage();
   const { availableCurrencies } = useCurrency();
   const [records, setRecords] = useState<Record[]>([]);
-  const [showWarning, setShowWarning] = useState(false);
   const [_, setLocation] = useLocation();
-  
-  // Edit Modal State
-  const [editingRecord, setEditingRecord] = useState<Record | null>(null);
-  const [editAmount, setEditAmount] = useState("");
-  const [editCategory, setEditCategory] = useState("");
-  const [editNote, setEditNote] = useState("");
-  const [editDate, setEditDate] = useState("");
 
   useEffect(() => {
     const storedData = localStorage.getItem("kaimono_records");
     if (storedData) {
       setRecords(JSON.parse(storedData));
     }
-
-    const warningDismissed = localStorage.getItem("kaimono_warning_dismissed");
-    if (!warningDismissed) {
-      setShowWarning(true);
-    }
   }, []);
-
-  const dismissWarning = () => {
-    setShowWarning(false);
-    localStorage.setItem("kaimono_warning_dismissed", "true");
-  };
 
   const handleDelete = (id: string) => {
     const newRecords = records.filter((r) => r.id !== id);
@@ -201,67 +177,9 @@ export default function HistoryPage() {
     document.body.removeChild(link);
   };
 
-  // Edit Handlers
-  const openEditModal = (record: Record) => {
-    setEditingRecord(record);
-    setEditAmount(record.amount.toString());
-    // Ensure categoryKey is used, fallback to "others" if missing
-    setEditCategory(record.categoryKey || "others");
-    setEditNote(record.note || "");
-    // Format date for datetime-local input (YYYY-MM-DDThh:mm)
-    try {
-      const dateObj = new Date(record.date);
-      const localDate = new Date(dateObj.getTime() - (dateObj.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
-      setEditDate(localDate);
-    } catch (e) {
-      setEditDate(new Date().toISOString().slice(0, 16));
-    }
+  const handleEdit = (id: string) => {
+    setLocation(`/edit/${id}`);
   };
-
-  const handleSaveEdit = () => {
-    if (!editingRecord) return;
-
-    const amount = parseFloat(editAmount);
-    if (isNaN(amount) || amount <= 0) {
-      toast.error(t("invalidAmount"));
-      return;
-    }
-
-    const updatedRecord: Record = {
-      ...editingRecord,
-      amount: amount,
-      categoryKey: editCategory,
-      category: t(editCategory), // Fallback for older structure
-      note: editNote,
-      date: new Date(editDate).toISOString()
-    };
-
-    const newRecords = records.map(r => r.id === editingRecord.id ? updatedRecord : r);
-    
-    // Sort by date descending
-    newRecords.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-
-    setRecords(newRecords);
-    localStorage.setItem("kaimono_records", JSON.stringify(newRecords));
-    setEditingRecord(null);
-    toast.success(t("saved"));
-    
-    if (navigator.vibrate) {
-      navigator.vibrate(50);
-    }
-  };
-
-  const categories = [
-    "food",
-    "daily",
-    "transport",
-    "entertainment",
-    "clothing",
-    "medical",
-    "education",
-    "utilities",
-    "others"
-  ];
 
   return (
     <motion.div 
@@ -296,139 +214,31 @@ export default function HistoryPage() {
 
       <main className="flex-1 max-w-md mx-auto w-full p-4 overflow-x-hidden">
         <AnimatePresence>
-          {showWarning && (
-            <motion.div
-              initial={{ opacity: 0, height: 0, marginBottom: 0 }}
-              animate={{ opacity: 1, height: "auto", marginBottom: 16 }}
-              exit={{ opacity: 0, height: 0, marginBottom: 0 }}
-              className="neo-border bg-yellow-300 dark:bg-yellow-600 p-3 flex gap-3 items-start shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] overflow-hidden"
+          {records.length === 0 ? (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="flex flex-col items-center justify-center h-64 text-muted-foreground"
             >
-              <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5" strokeWidth={2.5} />
-              <div className="flex-1 text-sm font-bold leading-tight">
-                <p className="mb-1">{t("warningTitle")}</p>
-                <p className="text-xs opacity-80 font-normal">{t("warningDesc")}</p>
-              </div>
-              <button 
-                onClick={dismissWarning}
-                className="shrink-0 p-1 hover:bg-black/10 rounded-sm transition-colors"
-              >
-                <X className="w-4 h-4" strokeWidth={3} />
-              </button>
+              <ShoppingBag className="w-12 h-12 mb-4 opacity-20" />
+              <p className="font-bold">{t("noRecords")}</p>
             </motion.div>
+          ) : (
+            records.map((record, index) => (
+              <HistoryItem 
+                key={record.id} 
+                record={record} 
+                index={index} 
+                onDelete={handleDelete}
+                onEdit={handleEdit}
+                t={t}
+                formatDate={formatDate}
+                availableCurrencies={availableCurrencies}
+              />
+            ))
           )}
         </AnimatePresence>
-
-        {records.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-[60vh] text-muted-foreground opacity-50">
-            <ShoppingBag className="w-16 h-16 mb-4" strokeWidth={1.5} />
-            <p className="text-lg font-bold tracking-widest uppercase">{t("noRecords")}</p>
-          </div>
-        ) : (
-          <div className="flex flex-col pb-8">
-            <AnimatePresence mode="popLayout">
-              {records.map((record, index) => (
-                <HistoryItem 
-                  key={record.id} 
-                  record={record} 
-                  index={index} 
-                  onDelete={handleDelete}
-                  onEdit={openEditModal}
-                  t={t}
-                  formatDate={formatDate}
-                  availableCurrencies={availableCurrencies}
-                />
-              ))}
-            </AnimatePresence>
-          </div>
-        )}
       </main>
-
-      {/* Edit Modal */}
-      <Dialog open={!!editingRecord} onOpenChange={(open) => !open && setEditingRecord(null)}>
-        <DialogContent className="neo-border bg-background sm:max-w-[425px] p-0 gap-0 overflow-hidden border-2 border-black dark:border-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,1)]">
-          <DialogHeader className="p-6 pb-4 border-b-2 border-black dark:border-white bg-accent/10">
-            <DialogTitle className="text-xl font-black uppercase tracking-tighter flex items-center gap-2">
-              <Edit2 className="w-5 h-5" strokeWidth={2.5} />
-              {t("editRecord")}
-            </DialogTitle>
-          </DialogHeader>
-          
-          <div className="p-6 space-y-5">
-            <div className="space-y-2">
-              <Label htmlFor="amount" className="font-bold uppercase text-xs text-muted-foreground tracking-wider">{t("amount")}</Label>
-              <div className="relative">
-                <Input
-                  id="amount"
-                  type="number"
-                  value={editAmount}
-                  onChange={(e) => setEditAmount(e.target.value)}
-                  className="text-right font-mono text-lg font-bold pr-12 border-2 border-black dark:border-white rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)]"
-                />
-                <div className="absolute right-3 top-1/2 -translate-y-1/2 font-bold text-muted-foreground">
-                  {editingRecord?.currency || "JPY"}
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="category" className="font-bold uppercase text-xs text-muted-foreground tracking-wider">{t("category")}</Label>
-              <Select value={editCategory} onValueChange={setEditCategory}>
-                <SelectTrigger className="font-bold border-2 border-black dark:border-white rounded-none focus:ring-0 focus:ring-offset-0 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)]">
-                  <SelectValue placeholder={t("selectCategory")} />
-                </SelectTrigger>
-                <SelectContent className="border-2 border-black dark:border-white rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
-                  {categories.map((cat) => (
-                    <SelectItem key={cat} value={cat} className="font-bold focus:bg-accent focus:text-accent-foreground cursor-pointer">
-                      {t(cat)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="date" className="font-bold uppercase text-xs text-muted-foreground tracking-wider">{t("date")}</Label>
-              <div className="relative">
-                <Input
-                  id="date"
-                  type="datetime-local"
-                  value={editDate}
-                  onChange={(e) => setEditDate(e.target.value)}
-                  className="font-mono font-bold border-2 border-black dark:border-white rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)]"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="note" className="font-bold uppercase text-xs text-muted-foreground tracking-wider">{t("note")}</Label>
-              <Textarea
-                id="note"
-                value={editNote}
-                onChange={(e) => setEditNote(e.target.value)}
-                className="font-bold resize-none min-h-[80px] border-2 border-black dark:border-white rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)]"
-                placeholder={t("notePlaceholder")}
-              />
-            </div>
-          </div>
-
-          <DialogFooter className="p-6 pt-2 bg-muted/10 flex-row gap-3 justify-end border-t-2 border-black dark:border-white">
-            <Button 
-              variant="outline" 
-              onClick={() => setEditingRecord(null)} 
-              className="flex-1 font-bold border-2 border-black dark:border-white rounded-none hover:bg-accent hover:text-accent-foreground transition-all active:translate-y-[2px]"
-            >
-              {t("cancel")}
-            </Button>
-            <Button 
-              onClick={handleSaveEdit} 
-              className="flex-1 font-bold border-2 border-black dark:border-white rounded-none bg-primary text-primary-foreground hover:bg-primary/90 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] active:translate-y-[2px] active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
-            >
-              <Save className="w-4 h-4 mr-2" strokeWidth={2.5} />
-              {t("save")}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </motion.div>
   );
 }

@@ -9,7 +9,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { SettingsModal } from "@/components/SettingsModal";
-import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
+import { PWAInstallPrompt, PWAInstallPromptHandle } from "@/components/PWAInstallPrompt";
+import { Smartphone } from "lucide-react";
 import { HelpModal } from "@/components/HelpModal";
 import {
   AlertDialog,
@@ -52,6 +53,15 @@ export default function Home() {
   const isEditMode = match && !!params?.id;
   const [originalDate, setOriginalDate] = useState<string | null>(null);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
+  const pwaPromptRef = useRef<PWAInstallPromptHandle>(null);
+  const [isPWA, setIsPWA] = useState(false);
+
+  useEffect(() => {
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
+                         (window.navigator as any).standalone || 
+                         document.referrer.includes('android-app://');
+    setIsPWA(isStandalone);
+  }, []);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   
   // フォントサイズ調整用のRefとState
@@ -265,7 +275,7 @@ export default function Home() {
       exit={{ opacity: 0 }}
       className="h-[100dvh] flex flex-col bg-background text-foreground font-sans overflow-hidden touch-none"
     >
-      <PWAInstallPrompt />
+      <PWAInstallPrompt ref={pwaPromptRef} />
       <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
       
       {/* 削除確認ダイアログ */}
@@ -321,6 +331,17 @@ export default function Home() {
 
         {!isEditMode && (
           <div className="flex items-center gap-2">
+            {!isPWA && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => pwaPromptRef.current?.openModal()}
+                className="w-10 h-10 rounded-none border-2 border-black dark:border-white hover:bg-accent hover:text-accent-foreground transition-all active:translate-y-1"
+                title="Install App"
+              >
+                <Smartphone className="w-6 h-6" strokeWidth={2.5} />
+              </Button>
+            )}
             <SettingsModal />
             <Button 
               variant="ghost" 

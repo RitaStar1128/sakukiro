@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, forwardRef, useImperativeHandle } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Smartphone, Share, PlusSquare, MoreVertical, Monitor } from "lucide-react";
@@ -11,7 +11,11 @@ import { useLanguage } from "@/contexts/LanguageContext";
 // - social_proof: 「ホーム画面に追加」の手順を具体的に示すことで、ユーザーの行動を促す。
 // - fitts_law: モバイルでのバナーは画面下部に配置し、親指でタップしやすい位置に。
 
-export function PWAInstallPrompt() {
+export interface PWAInstallPromptHandle {
+  openModal: () => void;
+}
+
+export const PWAInstallPrompt = forwardRef<PWAInstallPromptHandle>((_, ref) => {
   const { t, language } = useLanguage();
   const [isPWA, setIsPWA] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -19,6 +23,10 @@ export function PWAInstallPrompt() {
   const [showModal, setShowModal] = useState(false);
   const [currentUrl, setCurrentUrl] = useState("");
   const [forcePC, setForcePC] = useState(false);
+
+  useImperativeHandle(ref, () => ({
+    openModal: () => setShowModal(true)
+  }));
 
   useEffect(() => {
     // Check if user has chosen to use PC version
@@ -40,12 +48,19 @@ export function PWAInstallPrompt() {
     // Set current URL for QR code
     setCurrentUrl(window.location.href);
 
-    // Show banner if mobile and not PWA
+    // Show banner if mobile and not PWA, and NOT already dismissed
     if (mobileCheck && !isStandalone) {
-      // Check if banner was dismissed recently (optional, skipping for now to always show as per request)
-      setShowBanner(true);
+      const hasDismissed = localStorage.getItem("kaimono_pwa_banner_dismissed");
+      if (!hasDismissed) {
+        setShowBanner(true);
+      }
     }
   }, []);
+
+  const handleDismissBanner = () => {
+    setShowBanner(false);
+    localStorage.setItem("kaimono_pwa_banner_dismissed", "true");
+  };
 
   if (isPWA) return null;
 
@@ -113,13 +128,16 @@ export function PWAInstallPrompt() {
               <div className="flex gap-2 shrink-0">
                 <Button 
                   size="sm" 
-                  onClick={() => setShowModal(true)}
+                  onClick={() => {
+                    setShowModal(true);
+                    handleDismissBanner(); // バナーから開いた場合はバナーを閉じて次回から非表示
+                  }}
                   className="bg-white text-black border-2 border-black hover:bg-gray-100 font-bold shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-y-[1px] active:translate-x-[1px] active:shadow-none"
                 >
                   {language === 'ja' ? '追加方法' : 'How to'}
                 </Button>
                 <button 
-                  onClick={() => setShowBanner(false)}
+                  onClick={handleDismissBanner}
                   className="p-2 hover:bg-black/10 rounded-sm transition-colors"
                 >
                   <X className="w-5 h-5" strokeWidth={3} />
@@ -226,7 +244,7 @@ export function PWAInstallPrompt() {
       </AnimatePresence>
     </>
   );
-}
+});
 
 function Step({ number, text, icon, isLast = false }: { number: number, text: string, icon?: React.ReactNode, isLast?: boolean }) {
   return (

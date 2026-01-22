@@ -38,7 +38,7 @@ function App() {
         <LanguageProvider>
           <CurrencyProvider>
             <TooltipProvider>
-              <Toaster position="top-center" />
+              <Toaster position="bottom-center" toastOptions={{ style: { marginBottom: '4rem' } }} />
               <Router />
             </TooltipProvider>
           </CurrencyProvider>

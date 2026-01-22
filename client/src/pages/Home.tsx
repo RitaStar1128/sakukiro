@@ -285,7 +285,7 @@ export default function Home() {
       </AlertDialog>
 
       {/* Header - Minimal & Accessible */}
-      <header className="flex justify-between items-center px-4 py-3 border-b-2 border-black dark:border-white bg-white dark:bg-black shrink-0 z-20">
+      <header className={`flex justify-between items-center px-4 py-3 border-b-2 border-black dark:border-white shrink-0 z-20 transition-colors ${isEditMode ? "bg-destructive text-destructive-foreground" : "bg-white dark:bg-black"}`}>
         <div className="flex items-center gap-3">
           {isEditMode ? (
             <div className="flex items-center gap-2 w-full justify-center relative">
@@ -293,7 +293,7 @@ export default function Home() {
                 variant="ghost" 
                 size="icon" 
                 onClick={() => setLocation("/history")}
-                className="absolute left-0 w-8 h-8 rounded-none border-2 border-black dark:border-white hover:bg-accent hover:text-accent-foreground transition-all active:translate-y-1"
+                className="absolute left-0 w-8 h-8 rounded-none border-2 border-black dark:border-white hover:bg-black/10 hover:text-destructive-foreground transition-all active:translate-y-1"
               >
                 <ArrowLeft className="w-4 h-4" strokeWidth={3} />
               </Button>
@@ -338,7 +338,7 @@ export default function Home() {
             variant="ghost" 
             size="icon" 
             onClick={() => setShowDeleteConfirm(true)}
-            className="w-10 h-10 rounded-none border-2 border-black dark:border-white hover:bg-destructive hover:text-destructive-foreground transition-all active:translate-y-1 text-destructive"
+            className="w-10 h-10 rounded-none border-2 border-black dark:border-white hover:bg-black/10 hover:text-destructive-foreground transition-all active:translate-y-1 text-destructive-foreground"
           >
             <Trash2 className="w-5 h-5" strokeWidth={2.5} />
           </Button>

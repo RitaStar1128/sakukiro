@@ -14,7 +14,7 @@ import { HelpModal } from "@/components/HelpModal";
 
 import { HelpCircle } from "lucide-react";
 
-// UX_RATIONALE:
+// UX方針:
 // - fitts_law: 画面下部（サムゾーン）に操作系を集約。テンキーと確定ボタンを画面の約50%〜60%の領域に拡大し、親指での誤タップを極限まで減らす。
 // - jacob_law: 電卓アプリのメンタルモデルを踏襲。クリア(C)や削除(Back)の配置を直感的な位置に。
 // - miller_law: 画面上の情報量を「金額」「カテゴリ」「備考」の3つに絞り、認知負荷を下げる。
@@ -32,7 +32,7 @@ const CATEGORY_KEYS = [
 
 export default function Home() {
   const { t } = useLanguage();
-  const { getSymbol, config } = useCurrency();
+  const { currency, getSymbol, config } = useCurrency();
   const [amount, setAmount] = useState("");
   const [categoryKey, setCategoryKey] = useState(CATEGORY_KEYS[0]);
   const [note, setNote] = useState("");
@@ -64,6 +64,11 @@ export default function Home() {
   useEffect(() => {
     document.title = "サクキロ (SAKUKIRO) - 最速の支出管理・家計簿アプリ";
   }, []);
+
+  // 設定で通貨を変更したときに入力中の金額をリセット
+  useEffect(() => {
+    setAmount("");
+  }, [currency]);
 
   // フォントサイズ自動調整ロジック（桁数ベース＋フィット調整）
   useLayoutEffect(() => {
@@ -105,23 +110,36 @@ export default function Home() {
   const handleNumClick = (num: string) => {
     // 小数点入力の制御
     if (num === ".") {
-      if (amount.includes(".")) return; // 既に小数点がある場合は無視
-      if (amount === "") {
-        setAmount("0."); // 空の場合は "0." とする
+      if (config.decimals === 0) return;
+      if (!amount) {
+        setAmount("0.");
         return;
       }
+      if (amount.includes(".")) return;
+
+      setAmount((prev) => `${prev}.`);
+      return;
     }
 
-    // 小数点以下の桁数制限
-    if (amount.includes(".")) {
-      const parts = amount.split(".");
-      if (parts[1] && parts[1].length >= config.decimals) return;
-    }
+    // 数字入力の整形（先頭0の扱いを含む）
+    setAmount((prev) => {
+      const [intPart = "", decimalPart] = prev.split(".");
+      const hasDecimal = decimalPart !== undefined;
 
-    // 整数部の桁数制限（適当な上限）
-    if (!amount.includes(".") && amount.length >= 9) return;
+      if (hasDecimal) {
+        if (decimalPart.length >= config.decimals) return prev;
+        return `${prev}${num}`;
+      }
 
-    setAmount((prev) => prev + num);
+      if (intPart === "0") {
+        if (num === "0") return prev; // 先頭の0は一つだけ残す
+        return num; // 非0の数字が来たら先頭0を置き換える
+      }
+
+      if (intPart.length >= 9) return prev;
+
+      return `${prev}${num}`;
+    });
   };
 
   const handleDelete = () => {
@@ -141,7 +159,7 @@ export default function Home() {
     const newRecord = {
       id: crypto.randomUUID(),
       amount: parseFloat(amount),
-      categoryKey, // Save the key, not the translated string
+      categoryKey, // 翻訳済み文字列ではなくキーを保存する
       note,
       date: new Date().toISOString(),
       currency: config.code, // 記録時の通貨を保存

@@ -43,7 +43,7 @@ export default function Home() {
   // フォントサイズ調整用のRefとState
   const spanRef = useRef<HTMLSpanElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [fontSize, setFontSize] = useState('4.5rem');
+  const [fontSize, setFontSize] = useState(72);
   
   // 表示用のフォーマット済みテキストを計算
   const displayText = amount ? (() => {
@@ -65,40 +65,48 @@ export default function Home() {
     document.title = "サクキロ (SAKUKIRO) - 最速の支出管理・家計簿アプリ";
   }, []);
 
-  // フォントサイズ自動調整ロジック（ログ出力付き・高さ判定除外）
+  // フォントサイズ自動調整ロジック（二分探索版）
   useEffect(() => {
     const adjustFontSize = () => {
       if (!spanRef.current || !containerRef.current) return;
       
       const container = containerRef.current;
       const span = spanRef.current;
-      const containerWidth = container.clientWidth - 8;
+      const containerWidth = container.clientWidth - 8; // paddingを考慮
       
       console.log('調整開始:', displayText, 'コンテナ幅:', containerWidth);
       
-      let size = 72;
-      span.style.fontSize = `${size}px`;
+      // 二分探索で最適なサイズを見つける
+      let low = 20;
+      let high = 72;
+      let bestSize = 20;
       
-      requestAnimationFrame(() => {
-        while (span.scrollWidth > containerWidth && size > 20) {
-          size -= 1;
-          span.style.fontSize = `${size}px`;
-        }
+      while (low <= high) {
+        const mid = Math.floor((low + high) / 2);
+        span.style.fontSize = `${mid}px`;
         
-        console.log('最終サイズ:', size, 'スクロール幅:', span.scrollWidth);
-        setFontSize(`${size}px`);
-      });
+        // 強制的にレイアウトを再計算
+        span.offsetHeight;
+        
+        const currentWidth = span.scrollWidth;
+        console.log(`テスト中 size:${mid}px width:${currentWidth}px`);
+        
+        if (currentWidth <= containerWidth) {
+          bestSize = mid;
+          low = mid + 1;
+        } else {
+          high = mid - 1;
+        }
+      }
+      
+      console.log('最終サイズ:', bestSize);
+      setFontSize(bestSize);
     };
     
-    adjustFontSize();
+    // 少し遅延させてから実行
+    const timer = setTimeout(adjustFontSize, 0);
     
-    // ResizeObserverでコンテナサイズ変更を監視
-    const resizeObserver = new ResizeObserver(adjustFontSize);
-    if (containerRef.current) {
-      resizeObserver.observe(containerRef.current);
-    }
-    
-    return () => resizeObserver.disconnect();
+    return () => clearTimeout(timer);
   }, [displayText]);
 
   // テンキー入力処理
@@ -224,7 +232,7 @@ export default function Home() {
                 <span 
                   ref={spanRef}
                   className={`flex items-center justify-end font-bold tracking-tighter text-right w-full h-full px-1 whitespace-nowrap ${amount ? "text-foreground" : "text-muted-foreground/20"}`}
-                  style={{ fontSize }}
+                  style={{ fontSize: `${fontSize}px` }}
                 >
                   {displayText}
                 </span>

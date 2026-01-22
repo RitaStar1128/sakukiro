@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { motion, AnimatePresence, useMotionValue, useTransform, PanInfo } from "framer-motion";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCurrency, CurrencyCode } from "@/contexts/CurrencyContext";
+import { ExportModal } from "@/components/ExportModal";
 
 // UX_RATIONALE:
 // - serial_position_effect: リスト表示において、最新のアイテム（上部）を強調。
@@ -126,6 +127,7 @@ export default function HistoryPage() {
   const { t, formatDate } = useLanguage();
   const { availableCurrencies } = useCurrency();
   const [records, setRecords] = useState<Record[]>([]);
+  const [showExportModal, setShowExportModal] = useState(false);
   const [_, setLocation] = useLocation();
 
   useEffect(() => {
@@ -145,12 +147,15 @@ export default function HistoryPage() {
     }
   };
 
-  const handleExportCSV = () => {
+  const handleExportClick = () => {
     if (records.length === 0) {
       toast.error(t("noRecords"));
       return;
     }
+    setShowExportModal(true);
+  };
 
+  const handleExportConfirm = () => {
     const headers = ["Date", "Amount", "Currency", "Category", "Note"];
     const rows = records.map(record => {
       const date = new Date(record.date).toLocaleString();
@@ -175,6 +180,8 @@ export default function HistoryPage() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    
+    setShowExportModal(false);
   };
 
   const handleEdit = (id: string) => {
@@ -203,7 +210,7 @@ export default function HistoryPage() {
           <Button 
             variant="ghost" 
             size="icon" 
-            onClick={handleExportCSV}
+            onClick={handleExportClick}
             className="w-10 h-10 rounded-none border-2 border-black dark:border-white hover:bg-accent hover:text-accent-foreground transition-all active:translate-y-1"
             title="Export CSV"
           >
@@ -211,6 +218,12 @@ export default function HistoryPage() {
           </Button>
         )}
       </header>
+
+      <ExportModal 
+        isOpen={showExportModal} 
+        onClose={() => setShowExportModal(false)} 
+        onConfirm={handleExportConfirm} 
+      />
 
       <main className="flex-1 max-w-md mx-auto w-full p-4 overflow-x-hidden">
         <AnimatePresence>

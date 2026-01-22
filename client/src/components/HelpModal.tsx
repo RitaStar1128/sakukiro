@@ -119,14 +119,7 @@ export function HelpModal({ isOpen, onClose }: HelpModalProps) {
 
             </div>
             
-            <div className="p-4 border-t-2 border-black dark:border-white bg-muted/20 sticky bottom-0 backdrop-blur-sm">
-              <Button 
-                onClick={onClose}
-                className="w-full font-black text-base py-6 border-2 border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all"
-              >
-                {language === 'ja' ? '閉じる' : 'Close'}
-              </Button>
-            </div>
+
 
           </motion.div>
         </div>

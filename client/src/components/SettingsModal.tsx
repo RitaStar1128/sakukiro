@@ -1,6 +1,6 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Settings, Check } from "lucide-react";
+import { Settings, Check, X } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCurrency, CurrencyCode } from "@/contexts/CurrencyContext";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -20,13 +20,20 @@ export function SettingsModal() {
         </Button>
       </DialogTrigger>
       <DialogContent className="neo-border bg-background p-0 gap-0 max-w-sm w-[90vw] overflow-hidden shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] border-2 border-black dark:border-white sm:rounded-none">
-        <DialogHeader className="p-4 border-b-2 border-black dark:border-white bg-white dark:bg-black sticky top-0 z-10">
+        <DialogHeader className="p-4 border-b-2 border-black dark:border-white bg-white dark:bg-black sticky top-0 z-10 flex flex-row items-center justify-between space-y-0">
           <div className="flex items-center gap-3">
             <div className="bg-primary p-1 border-2 border-black dark:border-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)]">
               <Settings className="w-6 h-6 text-primary-foreground" strokeWidth={3} />
             </div>
             <DialogTitle className="text-2xl font-black uppercase tracking-tighter transform translate-y-[1px]">Settings</DialogTitle>
           </div>
+          <DialogClose asChild>
+            <button 
+              className="w-10 h-10 flex items-center justify-center bg-destructive text-destructive-foreground border-2 border-black dark:border-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] hover:translate-y-[1px] hover:translate-x-[1px] hover:shadow-none transition-all active:bg-destructive/90"
+            >
+              <X className="w-6 h-6" strokeWidth={4} />
+            </button>
+          </DialogClose>
         </DialogHeader>
         
         <div className="p-6 space-y-8">

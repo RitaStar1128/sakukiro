@@ -18,6 +18,7 @@ import { format } from "date-fns";
 // - zeigarnik_effect: 削除時のアニメーション（スワイプアウトやフェードアウト）で、タスク完了（削除）を視覚的に明確にする。
 // - von_restorff_effect: 各カードのデザインを統一しつつ、金額を大きく表示して視認性を高める。
 // - haptic_feedback: スワイプ操作による直感的なインタラクションを提供。
+// - aesthetic_usability_effect: 編集モーダルのデザインを統一（太枠、モノクロ）し、信頼感と操作性を向上。
 
 interface Record {
   id: string;
@@ -204,6 +205,7 @@ export default function HistoryPage() {
   const openEditModal = (record: Record) => {
     setEditingRecord(record);
     setEditAmount(record.amount.toString());
+    // Ensure categoryKey is used, fallback to "others" if missing
     setEditCategory(record.categoryKey || "others");
     setEditNote(record.note || "");
     // Format date for datetime-local input (YYYY-MM-DDThh:mm)
@@ -343,24 +345,24 @@ export default function HistoryPage() {
 
       {/* Edit Modal */}
       <Dialog open={!!editingRecord} onOpenChange={(open) => !open && setEditingRecord(null)}>
-        <DialogContent className="neo-border bg-background sm:max-w-[425px] p-0 gap-0 overflow-hidden">
-          <DialogHeader className="p-6 pb-2">
+        <DialogContent className="neo-border bg-background sm:max-w-[425px] p-0 gap-0 overflow-hidden border-2 border-black dark:border-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,1)]">
+          <DialogHeader className="p-6 pb-4 border-b-2 border-black dark:border-white bg-accent/10">
             <DialogTitle className="text-xl font-black uppercase tracking-tighter flex items-center gap-2">
-              <Edit2 className="w-5 h-5" />
+              <Edit2 className="w-5 h-5" strokeWidth={2.5} />
               {t("editRecord")}
             </DialogTitle>
           </DialogHeader>
           
-          <div className="p-6 pt-2 space-y-4">
+          <div className="p-6 space-y-5">
             <div className="space-y-2">
-              <Label htmlFor="amount" className="font-bold uppercase text-xs text-muted-foreground">{t("amount")}</Label>
+              <Label htmlFor="amount" className="font-bold uppercase text-xs text-muted-foreground tracking-wider">{t("amount")}</Label>
               <div className="relative">
                 <Input
                   id="amount"
                   type="number"
                   value={editAmount}
                   onChange={(e) => setEditAmount(e.target.value)}
-                  className="text-right font-mono text-lg font-bold pr-12"
+                  className="text-right font-mono text-lg font-bold pr-12 border-2 border-black dark:border-white rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)]"
                 />
                 <div className="absolute right-3 top-1/2 -translate-y-1/2 font-bold text-muted-foreground">
                   {editingRecord?.currency || "JPY"}
@@ -369,14 +371,14 @@ export default function HistoryPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="category" className="font-bold uppercase text-xs text-muted-foreground">{t("category")}</Label>
+              <Label htmlFor="category" className="font-bold uppercase text-xs text-muted-foreground tracking-wider">{t("category")}</Label>
               <Select value={editCategory} onValueChange={setEditCategory}>
-                <SelectTrigger className="font-bold">
-                  <SelectValue />
+                <SelectTrigger className="font-bold border-2 border-black dark:border-white rounded-none focus:ring-0 focus:ring-offset-0 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)]">
+                  <SelectValue placeholder={t("selectCategory")} />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="border-2 border-black dark:border-white rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
                   {categories.map((cat) => (
-                    <SelectItem key={cat} value={cat} className="font-bold">
+                    <SelectItem key={cat} value={cat} className="font-bold focus:bg-accent focus:text-accent-foreground cursor-pointer">
                       {t(cat)}
                     </SelectItem>
                   ))}
@@ -385,36 +387,43 @@ export default function HistoryPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="date" className="font-bold uppercase text-xs text-muted-foreground">{t("date")}</Label>
+              <Label htmlFor="date" className="font-bold uppercase text-xs text-muted-foreground tracking-wider">{t("date")}</Label>
               <div className="relative">
                 <Input
                   id="date"
                   type="datetime-local"
                   value={editDate}
                   onChange={(e) => setEditDate(e.target.value)}
-                  className="font-mono font-bold"
+                  className="font-mono font-bold border-2 border-black dark:border-white rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)]"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="note" className="font-bold uppercase text-xs text-muted-foreground">{t("note")}</Label>
+              <Label htmlFor="note" className="font-bold uppercase text-xs text-muted-foreground tracking-wider">{t("note")}</Label>
               <Textarea
                 id="note"
                 value={editNote}
                 onChange={(e) => setEditNote(e.target.value)}
-                className="font-bold resize-none min-h-[80px]"
+                className="font-bold resize-none min-h-[80px] border-2 border-black dark:border-white rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)]"
                 placeholder={t("notePlaceholder")}
               />
             </div>
           </div>
 
-          <DialogFooter className="p-6 pt-2 bg-muted/20 flex-row gap-2 justify-end border-t-2 border-black dark:border-white">
-            <Button variant="outline" onClick={() => setEditingRecord(null)} className="flex-1 font-bold border-2">
+          <DialogFooter className="p-6 pt-2 bg-muted/10 flex-row gap-3 justify-end border-t-2 border-black dark:border-white">
+            <Button 
+              variant="outline" 
+              onClick={() => setEditingRecord(null)} 
+              className="flex-1 font-bold border-2 border-black dark:border-white rounded-none hover:bg-accent hover:text-accent-foreground transition-all active:translate-y-[2px]"
+            >
               {t("cancel")}
             </Button>
-            <Button onClick={handleSaveEdit} className="flex-1 font-bold border-2 border-black dark:border-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] active:translate-y-[2px] active:shadow-none transition-all">
-              <Save className="w-4 h-4 mr-2" />
+            <Button 
+              onClick={handleSaveEdit} 
+              className="flex-1 font-bold border-2 border-black dark:border-white rounded-none bg-primary text-primary-foreground hover:bg-primary/90 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] active:translate-y-[2px] active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all"
+            >
+              <Save className="w-4 h-4 mr-2" strokeWidth={2.5} />
               {t("save")}
             </Button>
           </DialogFooter>

@@ -97,7 +97,9 @@ export default function Home() {
     adjustFontSize();
 
     const resizeObserver = new ResizeObserver(adjustFontSize);
-    resizeObserver.observe(containerRef.current);
+    if (containerRef.current) {
+      resizeObserver.observe(containerRef.current);
+    }
     window.addEventListener("resize", adjustFontSize);
 
     return () => {

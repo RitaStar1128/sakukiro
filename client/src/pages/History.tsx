@@ -1,11 +1,17 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
-import { ArrowLeft, Trash2, ShoppingBag, AlertTriangle, X, Download } from "lucide-react";
+import { ArrowLeft, Trash2, ShoppingBag, AlertTriangle, X, Download, Edit2, Save, Calendar as CalendarIcon } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence, useMotionValue, useTransform, PanInfo } from "framer-motion";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCurrency, CurrencyCode } from "@/contexts/CurrencyContext";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { format } from "date-fns";
 
 // UX_RATIONALE:
 // - serial_position_effect: リスト表示において、最新のアイテム（上部）を強調。
@@ -28,6 +34,7 @@ function HistoryItem({
   record, 
   index, 
   onDelete, 
+  onEdit,
   t, 
   formatDate, 
   availableCurrencies 
@@ -35,6 +42,7 @@ function HistoryItem({
   record: Record; 
   index: number; 
   onDelete: (id: string) => void; 
+  onEdit: (record: Record) => void;
   t: (key: string) => string; 
   formatDate: (date: string) => string;
   availableCurrencies: any;
@@ -76,7 +84,8 @@ function HistoryItem({
         dragElastic={{ left: 0.5, right: 0.05 }}
         onDragEnd={handleDragEnd}
         whileDrag={{ scale: 1.02, cursor: "grabbing" }}
-        className="relative neo-border bg-white dark:bg-black p-4 flex justify-between items-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] touch-pan-y"
+        onClick={() => onEdit(record)}
+        className="relative neo-border bg-white dark:bg-black p-4 flex justify-between items-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] touch-pan-y cursor-pointer active:scale-[0.98] transition-transform"
       >
         <div className="flex flex-col gap-1 overflow-hidden pointer-events-none select-none">
           <div className="flex items-baseline gap-2">
@@ -109,9 +118,9 @@ function HistoryItem({
           </div>
         </div>
         
-        {/* Visual indicator for swipe */}
-        <div className="text-muted-foreground/20 pl-2">
-          <ArrowLeft className="w-4 h-4" strokeWidth={3} />
+        {/* Visual indicator for swipe/edit */}
+        <div className="flex flex-col items-end gap-2 pl-2 text-muted-foreground/20">
+          <Edit2 className="w-4 h-4" strokeWidth={3} />
         </div>
       </motion.div>
     </motion.div>
@@ -124,6 +133,13 @@ export default function HistoryPage() {
   const [records, setRecords] = useState<Record[]>([]);
   const [showWarning, setShowWarning] = useState(false);
   const [_, setLocation] = useLocation();
+  
+  // Edit Modal State
+  const [editingRecord, setEditingRecord] = useState<Record | null>(null);
+  const [editAmount, setEditAmount] = useState("");
+  const [editCategory, setEditCategory] = useState("");
+  const [editNote, setEditNote] = useState("");
+  const [editDate, setEditDate] = useState("");
 
   useEffect(() => {
     const storedData = localStorage.getItem("kaimono_records");
@@ -183,6 +199,67 @@ export default function HistoryPage() {
     link.click();
     document.body.removeChild(link);
   };
+
+  // Edit Handlers
+  const openEditModal = (record: Record) => {
+    setEditingRecord(record);
+    setEditAmount(record.amount.toString());
+    setEditCategory(record.categoryKey || "others");
+    setEditNote(record.note || "");
+    // Format date for datetime-local input (YYYY-MM-DDThh:mm)
+    try {
+      const dateObj = new Date(record.date);
+      const localDate = new Date(dateObj.getTime() - (dateObj.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+      setEditDate(localDate);
+    } catch (e) {
+      setEditDate(new Date().toISOString().slice(0, 16));
+    }
+  };
+
+  const handleSaveEdit = () => {
+    if (!editingRecord) return;
+
+    const amount = parseFloat(editAmount);
+    if (isNaN(amount) || amount <= 0) {
+      toast.error(t("invalidAmount"));
+      return;
+    }
+
+    const updatedRecord: Record = {
+      ...editingRecord,
+      amount: amount,
+      categoryKey: editCategory,
+      category: t(editCategory), // Fallback for older structure
+      note: editNote,
+      date: new Date(editDate).toISOString()
+    };
+
+    const newRecords = records.map(r => r.id === editingRecord.id ? updatedRecord : r);
+    
+    // Sort by date descending
+    newRecords.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+    setRecords(newRecords);
+    localStorage.setItem("kaimono_records", JSON.stringify(newRecords));
+    setEditingRecord(null);
+    toast.success(t("saved"));
+    
+    if (navigator.vibrate) {
+      navigator.vibrate(50);
+    }
+  };
+
+  const categories = [
+    "food",
+    "daily",
+    "transport",
+    "entertainment",
+    "clothing",
+    "medical",
+    "education",
+    "utilities",
+    "others"
+  ];
 
   return (
     <motion.div 
@@ -253,6 +330,7 @@ export default function HistoryPage() {
                   record={record} 
                   index={index} 
                   onDelete={handleDelete}
+                  onEdit={openEditModal}
                   t={t}
                   formatDate={formatDate}
                   availableCurrencies={availableCurrencies}
@@ -262,6 +340,86 @@ export default function HistoryPage() {
           </div>
         )}
       </main>
+
+      {/* Edit Modal */}
+      <Dialog open={!!editingRecord} onOpenChange={(open) => !open && setEditingRecord(null)}>
+        <DialogContent className="neo-border bg-background sm:max-w-[425px] p-0 gap-0 overflow-hidden">
+          <DialogHeader className="p-6 pb-2">
+            <DialogTitle className="text-xl font-black uppercase tracking-tighter flex items-center gap-2">
+              <Edit2 className="w-5 h-5" />
+              {t("editRecord")}
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="p-6 pt-2 space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="amount" className="font-bold uppercase text-xs text-muted-foreground">{t("amount")}</Label>
+              <div className="relative">
+                <Input
+                  id="amount"
+                  type="number"
+                  value={editAmount}
+                  onChange={(e) => setEditAmount(e.target.value)}
+                  className="text-right font-mono text-lg font-bold pr-12"
+                />
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 font-bold text-muted-foreground">
+                  {editingRecord?.currency || "JPY"}
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="category" className="font-bold uppercase text-xs text-muted-foreground">{t("category")}</Label>
+              <Select value={editCategory} onValueChange={setEditCategory}>
+                <SelectTrigger className="font-bold">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((cat) => (
+                    <SelectItem key={cat} value={cat} className="font-bold">
+                      {t(cat)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="date" className="font-bold uppercase text-xs text-muted-foreground">{t("date")}</Label>
+              <div className="relative">
+                <Input
+                  id="date"
+                  type="datetime-local"
+                  value={editDate}
+                  onChange={(e) => setEditDate(e.target.value)}
+                  className="font-mono font-bold"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="note" className="font-bold uppercase text-xs text-muted-foreground">{t("note")}</Label>
+              <Textarea
+                id="note"
+                value={editNote}
+                onChange={(e) => setEditNote(e.target.value)}
+                className="font-bold resize-none min-h-[80px]"
+                placeholder={t("notePlaceholder")}
+              />
+            </div>
+          </div>
+
+          <DialogFooter className="p-6 pt-2 bg-muted/20 flex-row gap-2 justify-end border-t-2 border-black dark:border-white">
+            <Button variant="outline" onClick={() => setEditingRecord(null)} className="flex-1 font-bold border-2">
+              {t("cancel")}
+            </Button>
+            <Button onClick={handleSaveEdit} className="flex-1 font-bold border-2 border-black dark:border-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] active:translate-y-[2px] active:shadow-none transition-all">
+              <Save className="w-4 h-4 mr-2" />
+              {t("save")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </motion.div>
   );
 }

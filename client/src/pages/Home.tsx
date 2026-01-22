@@ -208,7 +208,7 @@ export default function Home() {
       const records = JSON.parse(storedData);
       const newRecords = records.filter((r: any) => r.id !== params.id);
       localStorage.setItem("kaimono_records", JSON.stringify(newRecords));
-      toast.success("記録を削除しました");
+      // toast.success("記録を削除しました");
       setLocation("/history");
     }
   };
@@ -244,7 +244,7 @@ export default function Home() {
       });
       
       localStorage.setItem("kaimono_records", JSON.stringify(records));
-      toast.success("記録を更新しました");
+      // toast.success("記録を更新しました");
       setLocation("/history");
     } else {
       // 新規作成処理

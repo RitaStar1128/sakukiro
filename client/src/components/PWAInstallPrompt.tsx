@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Smartphone, Share, PlusSquare, MoreVertical, Monitor } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 // UX_RATIONALE:
@@ -132,7 +133,7 @@ export const PWAInstallPrompt = forwardRef<PWAInstallPromptHandle>((_, ref) => {
                     setShowModal(true);
                     handleDismissBanner(); // バナーから開いた場合はバナーを閉じて次回から非表示
                   }}
-                  className="bg-white text-black border-2 border-black hover:bg-gray-100 font-bold shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-y-[1px] active:translate-x-[1px] active:shadow-none"
+                  className="bg-white text-black border-2 border-black hover:bg-gray-100 font-bold active:translate-y-[1px] active:translate-x-[1px]"
                 >
                   {language === 'ja' ? '追加方法' : 'How to'}
                 </Button>
@@ -149,104 +150,96 @@ export const PWAInstallPrompt = forwardRef<PWAInstallPromptHandle>((_, ref) => {
       </AnimatePresence>
 
       {/* Instructions Modal */}
-      <AnimatePresence>
-        {showModal && (
-          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4">
-            <motion.div
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
-              exit={{ y: "100%" }}
-              className="bg-white dark:bg-black border-t-4 sm:border-4 border-black dark:border-white w-full max-w-md max-h-[90vh] overflow-y-auto shadow-[0px_-4px_0px_0px_rgba(0,0,0,0.1)] sm:shadow-[8px_8px_0px_0px_var(--color-safety-orange)] flex flex-col"
-            >
-              <div className="p-4 border-b-2 border-black dark:border-white flex justify-between items-center sticky top-0 bg-white dark:bg-black z-10">
-                <div className="flex items-center gap-3">
-                  <div className="bg-primary p-1 border-2 border-black dark:border-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)]">
-                    <Smartphone className="w-6 h-6 text-primary-foreground" strokeWidth={3} />
-                  </div>
-                  <h3 className="text-2xl font-black uppercase tracking-tighter transform translate-y-[1px]">
-                    {language === 'ja' ? 'ホーム画面への追加' : 'Add to Home'}
-                  </h3>
-                </div>
-                <button 
-                  onClick={() => setShowModal(false)}
-                  className="w-10 h-10 flex items-center justify-center bg-destructive text-destructive-foreground border-2 border-black dark:border-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] hover:translate-y-[1px] hover:translate-x-[1px] hover:shadow-none transition-all active:bg-destructive/90"
+      <Dialog open={showModal} onOpenChange={setShowModal}>
+        <DialogContent className="neo-border bg-background p-0 gap-0 max-w-sm w-[90vw] overflow-hidden border-2 border-black dark:border-white sm:rounded-none">
+          <DialogHeader className="p-4 border-b-2 border-black dark:border-white bg-white dark:bg-black sticky top-0 z-10 flex flex-row items-center justify-between space-y-0">
+            <div className="flex items-center gap-3">
+              <div className="bg-primary p-1 border-2 border-black dark:border-white">
+                <Smartphone className="w-6 h-6 text-primary-foreground" strokeWidth={3} />
+              </div>
+              <DialogTitle className="text-2xl font-black uppercase tracking-tighter transform translate-y-[1px]">
+                {language === 'ja' ? 'ホーム画面への追加' : 'Add to Home'}
+              </DialogTitle>
+            </div>
+            <DialogClose asChild>
+              <button 
+                className="w-10 h-10 flex items-center justify-center bg-destructive text-destructive-foreground border-2 border-black dark:border-white hover:translate-y-[1px] hover:translate-x-[1px] transition-all active:bg-destructive/90"
+              >
+                <X className="w-6 h-6" strokeWidth={4} />
+              </button>
+            </DialogClose>
+          </DialogHeader>
+
+          <div className="p-4 max-h-[70vh] overflow-y-auto">
+            <Tabs defaultValue="ios" className="w-full">
+              <TabsList className="grid w-full grid-cols-2 mb-6 border-2 border-black dark:border-white p-1 bg-muted h-auto">
+                <TabsTrigger 
+                  value="ios" 
+                  className="font-bold py-2 data-[state=active]:bg-white dark:data-[state=active]:bg-black data-[state=active]:text-foreground data-[state=active]:border-2 data-[state=active]:border-black dark:data-[state=active]:border-white transition-all"
                 >
-                  <X className="w-6 h-6" strokeWidth={4} />
-                </button>
-              </div>
+                  iPhone (iOS)
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="android" 
+                  className="font-bold py-2 data-[state=active]:bg-white dark:data-[state=active]:bg-black data-[state=active]:text-foreground data-[state=active]:border-2 data-[state=active]:border-black dark:data-[state=active]:border-white transition-all"
+                >
+                  Android
+                </TabsTrigger>
+              </TabsList>
 
-              <div className="p-4">
-                <Tabs defaultValue="ios" className="w-full">
-                  <TabsList className="grid w-full grid-cols-2 mb-6 border-2 border-black dark:border-white p-1 bg-muted h-auto">
-                    <TabsTrigger 
-                      value="ios" 
-                      className="font-bold py-2 data-[state=active]:bg-white dark:data-[state=active]:bg-black data-[state=active]:text-foreground data-[state=active]:border-2 data-[state=active]:border-black dark:data-[state=active]:border-white data-[state=active]:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:data-[state=active]:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] transition-all"
-                    >
-                      iPhone (iOS)
-                    </TabsTrigger>
-                    <TabsTrigger 
-                      value="android" 
-                      className="font-bold py-2 data-[state=active]:bg-white dark:data-[state=active]:bg-black data-[state=active]:text-foreground data-[state=active]:border-2 data-[state=active]:border-black dark:data-[state=active]:border-white data-[state=active]:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:data-[state=active]:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] transition-all"
-                    >
-                      Android
-                    </TabsTrigger>
-                  </TabsList>
+              <TabsContent value="ios" className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
+                <div className="space-y-4">
+                  <Step 
+                    number={1} 
+                    text={language === 'ja' ? 'Safariでこのページを開きます。' : 'Open this page in Safari.'} 
+                    icon={<Monitor className="w-5 h-5" />}
+                  />
+                  <Step 
+                    number={2} 
+                    text={language === 'ja' ? '画面下部の「共有」ボタンをタップします。' : 'Tap the "Share" button at the bottom.'} 
+                    icon={<Share className="w-5 h-5" />}
+                  />
+                  <Step 
+                    number={3} 
+                    text={language === 'ja' ? 'メニューをスクロールして「ホーム画面に追加」を選択します。' : 'Scroll down and select "Add to Home Screen".'} 
+                    icon={<PlusSquare className="w-5 h-5" />}
+                  />
+                  <Step 
+                    number={4} 
+                    text={language === 'ja' ? '右上の「追加」をタップして完了です。' : 'Tap "Add" in the top right corner.'} 
+                    isLast
+                  />
+                </div>
+              </TabsContent>
 
-                  <TabsContent value="ios" className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
-                    <div className="space-y-4">
-                      <Step 
-                        number={1} 
-                        text={language === 'ja' ? 'Safariでこのページを開きます。' : 'Open this page in Safari.'} 
-                        icon={<Monitor className="w-5 h-5" />}
-                      />
-                      <Step 
-                        number={2} 
-                        text={language === 'ja' ? '画面下部の「共有」ボタンをタップします。' : 'Tap the "Share" button at the bottom.'} 
-                        icon={<Share className="w-5 h-5" />}
-                      />
-                      <Step 
-                        number={3} 
-                        text={language === 'ja' ? 'メニューをスクロールして「ホーム画面に追加」を選択します。' : 'Scroll down and select "Add to Home Screen".'} 
-                        icon={<PlusSquare className="w-5 h-5" />}
-                      />
-                      <Step 
-                        number={4} 
-                        text={language === 'ja' ? '右上の「追加」をタップして完了です。' : 'Tap "Add" in the top right corner.'} 
-                        isLast
-                      />
-                    </div>
-                  </TabsContent>
-
-                  <TabsContent value="android" className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
-                    <div className="space-y-4">
-                      <Step 
-                        number={1} 
-                        text={language === 'ja' ? 'Chromeでこのページを開きます。' : 'Open this page in Chrome.'} 
-                        icon={<Monitor className="w-5 h-5" />}
-                      />
-                      <Step 
-                        number={2} 
-                        text={language === 'ja' ? '右上のメニューアイコン（︙）をタップします。' : 'Tap the menu icon (︙) in the top right.'} 
-                        icon={<MoreVertical className="w-5 h-5" />}
-                      />
-                      <Step 
-                        number={3} 
-                        text={language === 'ja' ? '「ホーム画面に追加」または「アプリをインストール」を選択します。' : 'Select "Add to Home screen" or "Install app".'} 
-                        icon={<Smartphone className="w-5 h-5" />}
-                      />
-                      <Step 
-                        number={4} 
-                        text={language === 'ja' ? '確認画面で「追加」をタップして完了です。' : 'Tap "Add" to confirm.'} 
-                        isLast
-                      />
-                    </div>
-                  </TabsContent>
-                </Tabs>
-              </div>
-            </motion.div>
+              <TabsContent value="android" className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
+                <div className="space-y-4">
+                  <Step 
+                    number={1} 
+                    text={language === 'ja' ? 'Chromeでこのページを開きます。' : 'Open this page in Chrome.'} 
+                    icon={<Monitor className="w-5 h-5" />}
+                  />
+                  <Step 
+                    number={2} 
+                    text={language === 'ja' ? '右上のメニューアイコン（︙）をタップします。' : 'Tap the menu icon (︙) in the top right.'} 
+                    icon={<MoreVertical className="w-5 h-5" />}
+                  />
+                  <Step 
+                    number={3} 
+                    text={language === 'ja' ? '「ホーム画面に追加」または「アプリをインストール」を選択します。' : 'Select "Add to Home screen" or "Install app".'} 
+                    icon={<Smartphone className="w-5 h-5" />}
+                  />
+                  <Step 
+                    number={4} 
+                    text={language === 'ja' ? '確認画面で「追加」をタップして完了です。' : 'Tap "Add" to confirm.'} 
+                    isLast
+                  />
+                </div>
+              </TabsContent>
+            </Tabs>
           </div>
-        )}
-      </AnimatePresence>
+        </DialogContent>
+      </Dialog>
     </>
   );
 });

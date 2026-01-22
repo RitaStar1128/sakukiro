@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -289,7 +290,7 @@ export default function Home() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel className="border-2 border-black dark:border-white rounded-none font-bold hover:bg-accent hover:text-accent-foreground">キャンセル</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteRecord} className="bg-destructive text-destructive-foreground border-2 border-black dark:border-white rounded-none font-bold shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] hover:translate-y-[1px] hover:translate-x-[1px] hover:shadow-none transition-all">削除する</AlertDialogAction>
+            <AlertDialogAction onClick={handleDeleteRecord} className="bg-destructive text-destructive-foreground border-2 border-black dark:border-white rounded-none font-bold  hover:translate-y-[1px] hover:translate-x-[1px]  transition-all">削除する</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -311,7 +312,7 @@ export default function Home() {
             </div>
           ) : (
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-primary flex items-center justify-center border-2 border-black dark:border-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)]">
+              <div className="w-8 h-8 bg-primary flex items-center justify-center border-2 border-black dark:border-white ">
                 <ShoppingBag className="w-4 h-4 text-primary-foreground" strokeWidth={3} />
               </div>
               <h1 className="text-lg font-black tracking-tighter uppercase">SAKUKIRO</h1>
@@ -321,7 +322,7 @@ export default function Home() {
           {!isEditMode && (
             <button
               onClick={() => setIsHelpOpen(true)}
-              className="w-8 h-8 flex items-center justify-center border-2 border-black dark:border-white bg-white dark:bg-black hover:bg-accent transition-colors shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] active:translate-y-[1px] active:translate-x-[1px] active:shadow-none"
+              className="w-10 h-10 flex items-center justify-center border-2 border-black dark:border-white bg-white dark:bg-black hover:bg-accent transition-colors  active:translate-y-[1px] active:translate-x-[1px] "
               aria-label="Help"
             >
               <HelpCircle className="w-4 h-4" strokeWidth={3} />

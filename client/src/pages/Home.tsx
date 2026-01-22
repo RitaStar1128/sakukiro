@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -65,48 +65,40 @@ export default function Home() {
     document.title = "サクキロ (SAKUKIRO) - 最速の支出管理・家計簿アプリ";
   }, []);
 
-  // フォントサイズ自動調整ロジック（二分探索版）
-  useEffect(() => {
+  // フォントサイズ自動調整ロジック（桁数ベース＋フィット調整）
+  useLayoutEffect(() => {
     const adjustFontSize = () => {
       if (!spanRef.current || !containerRef.current) return;
-      
-      const container = containerRef.current;
+
+      const containerWidth = containerRef.current.clientWidth - 8; // paddingを考慮
       const span = spanRef.current;
-      const containerWidth = container.clientWidth - 8; // paddingを考慮
-      
-      console.log('調整開始:', displayText, 'コンテナ幅:', containerWidth);
-      
-      // 二分探索で最適なサイズを見つける
-      let low = 20;
-      let high = 72;
-      let bestSize = 20;
-      
-      while (low <= high) {
-        const mid = Math.floor((low + high) / 2);
-        span.style.fontSize = `${mid}px`;
-        
-        // 強制的にレイアウトを再計算
+
+      const digitCount = displayText.replace(/\D/g, "").length || 1;
+      const baseSize = Math.max(28, Math.min(72, 72 - (digitCount - 1) * 4));
+
+      let nextSize = baseSize;
+      span.style.fontSize = `${nextSize}px`;
+      span.offsetHeight;
+
+      while (span.scrollWidth > containerWidth && nextSize > 16) {
+        nextSize -= 1;
+        span.style.fontSize = `${nextSize}px`;
         span.offsetHeight;
-        
-        const currentWidth = span.scrollWidth;
-        console.log(`テスト中 size:${mid}px width:${currentWidth}px`);
-        
-        if (currentWidth <= containerWidth) {
-          bestSize = mid;
-          low = mid + 1;
-        } else {
-          high = mid - 1;
-        }
       }
-      
-      console.log('最終サイズ:', bestSize);
-      setFontSize(bestSize);
+
+      setFontSize(nextSize);
     };
-    
-    // 少し遅延させてから実行
-    const timer = setTimeout(adjustFontSize, 0);
-    
-    return () => clearTimeout(timer);
+
+    adjustFontSize();
+
+    const resizeObserver = new ResizeObserver(adjustFontSize);
+    resizeObserver.observe(containerRef.current);
+    window.addEventListener("resize", adjustFontSize);
+
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener("resize", adjustFontSize);
+    };
   }, [displayText]);
 
   // テンキー入力処理
@@ -231,7 +223,7 @@ export default function Home() {
               <div ref={containerRef} className="flex-1 flex items-center justify-end min-w-0 overflow-hidden h-full">
                 <span 
                   ref={spanRef}
-                  className={`flex items-center justify-end font-bold tracking-tighter text-right w-full h-full px-1 whitespace-nowrap ${amount ? "text-foreground" : "text-muted-foreground/20"}`}
+                  className={`inline-flex items-center justify-end font-bold tracking-tighter text-right h-full px-1 whitespace-nowrap ${amount ? "text-foreground" : "text-muted-foreground/20"}`}
                   style={{ fontSize: `${fontSize}px` }}
                 >
                   {displayText}

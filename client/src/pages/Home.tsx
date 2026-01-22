@@ -176,14 +176,7 @@ export default function Home() {
                 <span 
                   className={`flex items-center justify-end font-bold tracking-tighter text-right w-full h-full px-1 ${amount ? "text-foreground" : "text-muted-foreground/20"}`}
                   style={{
-                    fontSize: (() => {
-                      const len = amount.length;
-                      if (len >= 9) return "2.5rem";
-                      if (len === 8) return "2.9rem";
-                      if (len === 7) return "3.25rem";
-                      if (len === 6) return "4rem";
-                      return "4.5rem";
-                    })()
+                    fontSize: `clamp(1.5rem, ${10 / Math.max(amount.length, 1)}vw, 4.5rem)`
                   }}
                 >
                   {amount ? (() => {

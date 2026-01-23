@@ -67,7 +67,7 @@ function HistoryItem({
       {/* Background Layer (Delete Action) */}
       <motion.div 
         style={{ opacity: bgOpacity }}
-        className="absolute inset-0 bg-destructive flex items-center justify-end px-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]"
+        className="absolute inset-0 bg-destructive flex items-center justify-end px-6 "
       >
         <Trash2 className="w-6 h-6 text-destructive-foreground" strokeWidth={2.5} />
       </motion.div>
@@ -77,11 +77,11 @@ function HistoryItem({
         style={{ x, opacity }}
         drag="x"
         dragConstraints={{ left: 0, right: 0 }}
-        dragElastic={{ left: 0.5, right: 0.05 }}
+        dragElastic={{ left: 0.7, right: 0.1 }}
         onDragEnd={handleDragEnd}
-        whileDrag={{ scale: 1.02, cursor: "grabbing" }}
+        whileDrag={{ scale: 1.02, cursor: "grabbing", x: -20 }}
         onClick={() => onEdit(record.id)}
-        className="relative neo-border bg-white dark:bg-black p-4 flex justify-between items-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] touch-pan-y cursor-pointer active:scale-[0.98] transition-transform"
+        className="relative neo-border bg-white dark:bg-black p-4 flex justify-between items-center  touch-pan-y cursor-pointer active:scale-[0.98] transition-transform"
       >
         <div className="flex flex-col gap-1 overflow-hidden pointer-events-none select-none">
           <div className="flex items-baseline gap-2">
@@ -127,6 +127,7 @@ export default function HistoryPage() {
   const { t, formatDate } = useLanguage();
   const { availableCurrencies } = useCurrency();
   const [records, setRecords] = useState<Record[]>([]);
+  const [showTutorial, setShowTutorial] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
   const [_, setLocation] = useLocation();
 
@@ -134,6 +135,17 @@ export default function HistoryPage() {
     const storedData = localStorage.getItem("kaimono_records");
     if (storedData) {
       setRecords(JSON.parse(storedData));
+    }
+
+    // Check tutorial status
+    const hasSeenTutorial = localStorage.getItem("kaimono_swipe_tutorial_seen");
+    if (!hasSeenTutorial && storedData && JSON.parse(storedData).length > 0) {
+      setShowTutorial(true);
+      // Auto dismiss after 3 seconds
+      setTimeout(() => {
+        setShowTutorial(false);
+        localStorage.setItem("kaimono_swipe_tutorial_seen", "true");
+      }, 3000);
     }
   }, []);
 
@@ -225,7 +237,29 @@ export default function HistoryPage() {
         onConfirm={handleExportConfirm} 
       />
 
-      <main className="flex-1 max-w-md mx-auto w-full p-4 overflow-x-hidden">
+      <main className="flex-1 max-w-md mx-auto w-full p-4 overflow-x-hidden relative">
+        {/* Tutorial Overlay */}
+        <AnimatePresence>
+          {showTutorial && records.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 z-20 pointer-events-none flex items-start justify-center pt-12"
+            >
+              <div className="bg-black/80 text-white px-4 py-2 rounded-full font-bold text-sm flex items-center gap-2 shadow-lg">
+                <motion.div
+                  animate={{ x: [-5, 5, -5] }}
+                  transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+                >
+                  ←
+                </motion.div>
+                {t("swipeToDelete")}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <AnimatePresence>
           {records.length === 0 ? (
             <motion.div 

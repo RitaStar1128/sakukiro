@@ -24,12 +24,12 @@ export function HelpModal({ isOpen, onClose }: HelpModalProps) {
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="bg-white dark:bg-black border-4 border-black dark:border-white w-full max-w-md max-h-[90vh] overflow-y-auto shadow-[8px_8px_0px_0px_var(--color-safety-orange)] flex flex-col"
+            className="bg-white dark:bg-black border-4 border-black dark:border-white w-full max-w-md max-h-[90vh] overflow-y-auto  flex flex-col"
           >
             {/* Header */}
             <div className="p-4 border-b-2 border-black dark:border-white flex justify-between items-center sticky top-0 bg-white dark:bg-black z-10">
               <div className="flex items-center gap-3">
-                <div className="bg-primary p-1 border-2 border-black dark:border-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)]">
+                <div className="bg-primary p-1 border-2 border-black dark:border-white ">
                   <HelpCircle className="w-6 h-6 text-primary-foreground" strokeWidth={3} />
                 </div>
                 <h2 className="text-2xl font-black uppercase tracking-tighter transform translate-y-[1px]">
@@ -38,7 +38,7 @@ export function HelpModal({ isOpen, onClose }: HelpModalProps) {
               </div>
               <button 
                 onClick={onClose}
-                className="w-10 h-10 flex items-center justify-center bg-destructive text-destructive-foreground border-2 border-black dark:border-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] hover:translate-y-[1px] hover:translate-x-[1px] hover:shadow-none transition-all active:bg-destructive/90"
+                className="w-10 h-10 flex items-center justify-center bg-destructive text-destructive-foreground border-2 border-black dark:border-white  hover:translate-y-[1px] hover:translate-x-[1px]  transition-all active:bg-destructive/90"
               >
                 <X className="w-6 h-6" strokeWidth={4} />
               </button>

@@ -281,7 +281,7 @@ export default function Home() {
       
       {/* 削除確認ダイアログ */}
       <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
-        <AlertDialogContent className="border-2 border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] rounded-none">
+        <AlertDialogContent className="border-2 border-black dark:border-white  rounded-none">
           <AlertDialogHeader>
             <AlertDialogTitle className="font-black uppercase">記録を削除しますか？</AlertDialogTitle>
             <AlertDialogDescription className="font-bold text-muted-foreground">
@@ -379,7 +379,7 @@ export default function Home() {
               key={amount}
               initial={{ scale: 0.98 }}
               animate={{ scale: 1 }}
-              className="neo-input h-24 flex items-center bg-white dark:bg-black transition-all group-focus-within:shadow-[6px_6px_0px_0px_var(--color-safety-orange)] px-4 py-0 relative gap-2"
+              className="neo-input h-24 flex items-center bg-white dark:bg-black transition-all  px-4 py-0 relative gap-2"
             >
               {/* Currency Info - Fixed Width Area */}
               <div className="flex flex-col items-center justify-center w-12 shrink-0 pointer-events-none select-none">
@@ -418,12 +418,12 @@ export default function Home() {
               <label className="text-xs font-black uppercase tracking-widest pl-1">{t("category")}</label>
               <Select value={categoryKey} onValueChange={setCategoryKey}>
                 <SelectTrigger 
-                  className="w-full text-base font-bold px-3 py-0 border-2 border-black dark:border-white rounded-none shadow-none focus:ring-0 focus:shadow-[4px_4px_0px_0px_var(--color-safety-orange)] transition-all bg-white dark:bg-black box-border"
+                  className="w-full text-base font-bold px-3 py-0 border-2 border-black dark:border-white rounded-none shadow-none focus:ring-0  transition-all bg-white dark:bg-black box-border"
                   style={{ height: '56px' }}
                 >
                   <SelectValue placeholder={t("category")} />
                 </SelectTrigger>
-                <SelectContent className="border-2 border-black dark:border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] max-h-[40vh]">
+                <SelectContent className="border-2 border-black dark:border-white  max-h-[40vh]">
                   {CATEGORY_KEYS.map((key) => (
                     <SelectItem key={key} value={key} className="font-bold py-3 cursor-pointer focus:bg-accent focus:text-accent-foreground">
                       {t(key)}
@@ -438,7 +438,7 @@ export default function Home() {
                 value={note} 
                 onChange={(e) => setNote(e.target.value)}
                 placeholder={t("notePlaceholder")}
-                className="w-full text-base font-bold px-3 py-0 border-2 border-black dark:border-white rounded-none shadow-none focus-visible:ring-0 focus:shadow-[4px_4px_0px_0px_var(--color-safety-orange)] transition-all bg-white dark:bg-black box-border"
+                className="w-full text-base font-bold px-3 py-0 border-2 border-black dark:border-white rounded-none shadow-none focus-visible:ring-0  transition-all bg-white dark:bg-black box-border"
                 style={{ height: '56px' }}
               />
             </div>

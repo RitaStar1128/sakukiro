@@ -19,17 +19,17 @@ export function SettingsModal() {
           <Settings className="w-6 h-6" strokeWidth={2.5} />
         </Button>
       </DialogTrigger>
-      <DialogContent className="neo-border bg-background p-0 gap-0 max-w-sm w-[90vw] overflow-hidden shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] border-2 border-black dark:border-white sm:rounded-none">
+      <DialogContent className="neo-border bg-background p-0 gap-0 max-w-sm w-[90vw] overflow-hidden  border-2 border-black dark:border-white sm:rounded-none">
         <DialogHeader className="p-4 border-b-2 border-black dark:border-white bg-white dark:bg-black sticky top-0 z-10 flex flex-row items-center justify-between space-y-0">
           <div className="flex items-center gap-3">
-            <div className="bg-primary p-1 border-2 border-black dark:border-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)]">
+            <div className="bg-primary p-1 border-2 border-black dark:border-white ">
               <Settings className="w-6 h-6 text-primary-foreground" strokeWidth={3} />
             </div>
             <DialogTitle className="text-2xl font-black uppercase tracking-tighter transform translate-y-[1px]">Settings</DialogTitle>
           </div>
           <DialogClose asChild>
             <button 
-              className="w-10 h-10 flex items-center justify-center bg-destructive text-destructive-foreground border-2 border-black dark:border-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] hover:translate-y-[1px] hover:translate-x-[1px] hover:shadow-none transition-all active:bg-destructive/90"
+              className="w-10 h-10 flex items-center justify-center bg-destructive text-destructive-foreground border-2 border-black dark:border-white  hover:translate-y-[1px] hover:translate-x-[1px]  transition-all active:bg-destructive/90"
             >
               <X className="w-6 h-6" strokeWidth={4} />
             </button>
@@ -43,10 +43,10 @@ export function SettingsModal() {
             <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={() => setLanguage("ja")}
-                className={`neo-border p-3 flex items-center justify-between transition-all active:translate-y-[2px] active:shadow-none ${
+                className={`neo-border p-3 flex items-center justify-between transition-all active:translate-y-[2px]  ${
                   language === "ja" 
-                    ? "bg-primary text-primary-foreground shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)]" 
-                    : "bg-background hover:bg-accent shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)]"
+                    ? "bg-primary text-primary-foreground " 
+                    : "bg-background hover:bg-accent "
                 }`}
               >
                 <span className="font-bold">日本語</span>
@@ -54,10 +54,10 @@ export function SettingsModal() {
               </button>
               <button
                 onClick={() => setLanguage("en")}
-                className={`neo-border p-3 flex items-center justify-between transition-all active:translate-y-[2px] active:shadow-none ${
+                className={`neo-border p-3 flex items-center justify-between transition-all active:translate-y-[2px]  ${
                   language === "en" 
-                    ? "bg-primary text-primary-foreground shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)]" 
-                    : "bg-background hover:bg-accent shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)]"
+                    ? "bg-primary text-primary-foreground " 
+                    : "bg-background hover:bg-accent "
                 }`}
               >
                 <span className="font-bold">English</span>
@@ -72,10 +72,10 @@ export function SettingsModal() {
             <div className="grid grid-cols-3 gap-3">
               <button
                 onClick={() => setTheme("light")}
-                className={`neo-border p-3 flex flex-col items-center justify-center gap-2 transition-all active:translate-y-[2px] active:shadow-none ${
+                className={`neo-border p-3 flex flex-col items-center justify-center gap-2 transition-all active:translate-y-[2px]  ${
                   theme === "light"
-                    ? "bg-primary text-primary-foreground shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)]"
-                    : "bg-background hover:bg-accent shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)]"
+                    ? "bg-primary text-primary-foreground "
+                    : "bg-background hover:bg-accent "
                 }`}
               >
                 <Sun className="w-6 h-6" strokeWidth={2.5} />
@@ -83,10 +83,10 @@ export function SettingsModal() {
               </button>
               <button
                 onClick={() => setTheme("dark")}
-                className={`neo-border p-3 flex flex-col items-center justify-center gap-2 transition-all active:translate-y-[2px] active:shadow-none ${
+                className={`neo-border p-3 flex flex-col items-center justify-center gap-2 transition-all active:translate-y-[2px]  ${
                   theme === "dark"
-                    ? "bg-primary text-primary-foreground shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)]"
-                    : "bg-background hover:bg-accent shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)]"
+                    ? "bg-primary text-primary-foreground "
+                    : "bg-background hover:bg-accent "
                 }`}
               >
                 <Moon className="w-6 h-6" strokeWidth={2.5} />
@@ -94,10 +94,10 @@ export function SettingsModal() {
               </button>
               <button
                 onClick={() => setTheme("system")}
-                className={`neo-border p-3 flex flex-col items-center justify-center gap-2 transition-all active:translate-y-[2px] active:shadow-none ${
+                className={`neo-border p-3 flex flex-col items-center justify-center gap-2 transition-all active:translate-y-[2px]  ${
                   theme === "system"
-                    ? "bg-primary text-primary-foreground shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)]"
-                    : "bg-background hover:bg-accent shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)]"
+                    ? "bg-primary text-primary-foreground "
+                    : "bg-background hover:bg-accent "
                 }`}
               >
                 <Monitor className="w-6 h-6" strokeWidth={2.5} />
@@ -114,7 +114,7 @@ export function SettingsModal() {
                 localStorage.removeItem("kaimono_force_pc");
                 window.location.reload();
               }}
-              className="w-full neo-border p-3 flex items-center justify-between bg-background hover:bg-accent shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] transition-all active:translate-y-[2px] active:shadow-none"
+              className="w-full neo-border p-3 flex items-center justify-between bg-background hover:bg-accent  transition-all active:translate-y-[2px] "
             >
               <div className="flex items-center gap-3">
                 <Smartphone className="w-5 h-5" strokeWidth={2.5} />
@@ -131,10 +131,10 @@ export function SettingsModal() {
                 <button
                   key={c.code}
                   onClick={() => setCurrency(c.code)}
-                  className={`neo-border p-3 flex items-center justify-between transition-all active:translate-y-[2px] active:shadow-none ${
+                  className={`neo-border p-3 flex items-center justify-between transition-all active:translate-y-[2px]  ${
                     currency === c.code
-                      ? "bg-primary text-primary-foreground shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)]"
-                      : "bg-background hover:bg-accent shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)]"
+                      ? "bg-primary text-primary-foreground "
+                      : "bg-background hover:bg-accent "
                   }`}
                 >
                   <div className="flex items-baseline gap-2">

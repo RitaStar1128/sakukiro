@@ -50,6 +50,7 @@
   --color-black: oklch(0.15 0 0);
   --color-white: oklch(1 0 0);
   --color-grey-100: oklch(0.95 0 0);
+  --color-grey-900: oklch(0.2 0 0);
 
   --primary: var(--color-safety-orange);
   --primary-foreground: var(--color-black);
@@ -115,7 +116,7 @@
   --secondary: var(--color-electric-blue);
   --secondary-foreground: var(--color-white);
   
-  --muted: oklch(0.2 0 0);
+  --muted: var(--color-grey-900);
   --muted-foreground: oklch(0.7 0 0);
   
   --accent: var(--color-safety-orange);

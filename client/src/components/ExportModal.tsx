@@ -2,6 +2,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from "@
 import { Button } from "@/components/ui/button";
 import { Download, X, FileSpreadsheet, Table } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { modalBodyClass, modalCloseButtonClass, modalContentClass, modalHeaderClass, modalIconBoxClass, modalTitleClass } from "@/components/modalStyles";
 
 // UX_RATIONALE:
 // - confirmation_bias: ユーザーがエクスポートを実行する前に、その内容と形式を確認させることで、期待通りの結果が得られるという確信を与える。
@@ -18,26 +19,26 @@ export function ExportModal({ isOpen, onClose, onConfirm }: ExportModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="neo-border bg-background p-0 gap-0 max-w-sm w-[90vw] overflow-hidden  border-2 border-black dark:border-white sm:rounded-none">
-        <DialogHeader className="p-4 border-b-2 border-black dark:border-white bg-white dark:bg-black sticky top-0 z-10 flex flex-row items-center justify-between space-y-0">
+      <DialogContent className={modalContentClass}>
+        <DialogHeader className={modalHeaderClass}>
           <div className="flex items-center gap-3">
-            <div className="bg-primary p-1 border-2 border-black dark:border-white ">
+            <div className={modalIconBoxClass}>
               <Download className="w-6 h-6 text-primary-foreground" strokeWidth={3} />
             </div>
-            <DialogTitle className="text-2xl font-black uppercase tracking-tighter transform translate-y-[1px]">
+            <DialogTitle className={modalTitleClass}>
               {language === 'ja' ? 'データ出力' : 'Export Data'}
             </DialogTitle>
           </div>
           <DialogClose asChild>
             <button 
-              className="w-10 h-10 flex items-center justify-center bg-destructive text-destructive-foreground border-2 border-black dark:border-white  hover:translate-y-[1px] hover:translate-x-[1px]  transition-all active:bg-destructive/90"
+              className={modalCloseButtonClass}
             >
               <X className="w-6 h-6" strokeWidth={4} />
             </button>
           </DialogClose>
         </DialogHeader>
         
-        <div className="p-6 space-y-6">
+        <div className={`${modalBodyClass} p-6 space-y-6`}>
           <div className="space-y-4">
             <div className="flex items-start gap-4 p-4 bg-muted border-2 border-black dark:border-white">
               <FileSpreadsheet className="w-8 h-8 shrink-0" strokeWidth={2} />

@@ -6,6 +6,7 @@ import { useCurrency, CurrencyCode } from "@/contexts/CurrencyContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { motion } from "framer-motion";
 import { Sun, Moon, Monitor, Smartphone } from "lucide-react";
+import { modalBodyClass, modalCloseButtonClass, modalContentClass, modalHeaderClass, modalIconBoxClass, modalTitleClass } from "@/components/modalStyles";
 
 export function SettingsModal() {
   const { t, language, setLanguage } = useLanguage();
@@ -19,24 +20,24 @@ export function SettingsModal() {
           <Settings className="w-6 h-6" strokeWidth={2.5} />
         </Button>
       </DialogTrigger>
-      <DialogContent className="neo-border bg-background p-0 gap-0 max-w-sm w-[90vw] overflow-hidden  border-2 border-black dark:border-white sm:rounded-none">
-        <DialogHeader className="p-4 border-b-2 border-black dark:border-white bg-white dark:bg-black sticky top-0 z-10 flex flex-row items-center justify-between space-y-0">
+      <DialogContent className={modalContentClass}>
+        <DialogHeader className={modalHeaderClass}>
           <div className="flex items-center gap-3">
-            <div className="bg-primary p-1 border-2 border-black dark:border-white ">
+            <div className={modalIconBoxClass}>
               <Settings className="w-6 h-6 text-primary-foreground" strokeWidth={3} />
             </div>
-            <DialogTitle className="text-2xl font-black uppercase tracking-tighter transform translate-y-[1px]">Settings</DialogTitle>
+            <DialogTitle className={modalTitleClass}>Settings</DialogTitle>
           </div>
           <DialogClose asChild>
             <button 
-              className="w-10 h-10 flex items-center justify-center bg-destructive text-destructive-foreground border-2 border-black dark:border-white  hover:translate-y-[1px] hover:translate-x-[1px]  transition-all active:bg-destructive/90"
+              className={modalCloseButtonClass}
             >
               <X className="w-6 h-6" strokeWidth={4} />
             </button>
           </DialogClose>
         </DialogHeader>
         
-        <div className="p-6 space-y-8">
+        <div className={`${modalBodyClass} p-6 space-y-8`}>
           {/* Language Section */}
           <div className="space-y-3">
             <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Language</h3>

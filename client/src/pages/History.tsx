@@ -3,17 +3,16 @@ import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
 import { ArrowLeft, Trash2, Download, Edit2, ShoppingBag } from "lucide-react";
 import { toast } from "sonner";
-import { motion, AnimatePresence, useMotionValue, useTransform, PanInfo } from "framer-motion";
+import { motion, AnimatePresence, useMotionValue, useTransform, PanInfo, useSpring } from "framer-motion";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCurrency, CurrencyCode } from "@/contexts/CurrencyContext";
 import { ExportModal } from "@/components/ExportModal";
 
 // UX_RATIONALE:
-// - serial_position_effect: リスト表示において、最新のアイテム（上部）を強調。
-// - zeigarnik_effect: 削除時のアニメーション（スワイプアウトやフェードアウト）で、タスク完了（削除）を視覚的に明確にする。
-// - von_restorff_effect: 各カードのデザインを統一しつつ、金額を大きく表示して視認性を高める。
-// - haptic_feedback: スワイプ操作による直感的なインタラクションを提供。
-// - aesthetic_usability_effect: 編集モーダルのデザインを統一（太枠、モノクロ）し、信頼感と操作性を向上。
+// - spring_physics: スワイプ操作にバネのような物理挙動を導入し、指への追従性と心地よい反発感を実現。
+// - dynamic_feedback: スワイプ量に応じてゴミ箱アイコンのスケールや色を変化させ、削除の閾値を直感的に伝える。
+// - layout_animation: 削除後にリストが滑らかに詰まるアニメーションで、空間的な連続性を維持。
+// - haptic_feedback: 削除確定の閾値を超えた瞬間に振動フィードバックを与え、操作の確信度を高める。
 
 interface Record {
   id: string;
@@ -25,7 +24,7 @@ interface Record {
   currency?: CurrencyCode;
 }
 
-// Swipeable Item Component
+// Swipeable Item Component with Advanced Physics
 function HistoryItem({ 
   record, 
   index, 
@@ -43,47 +42,83 @@ function HistoryItem({
   formatDate: (date: string) => string;
   availableCurrencies: any;
 }) {
+  // Motion values for swipe gesture
   const x = useMotionValue(0);
-  const opacity = useTransform(x, [-100, -50, 0], [0, 1, 1]);
-  const bgOpacity = useTransform(x, [-100, 0], [1, 0]);
+  const dragX = useSpring(x, { stiffness: 500, damping: 30 }); // Add spring physics to drag
   
+  // Dynamic transformations based on swipe distance
+  const deleteThreshold = -100;
+  const bgOpacity = useTransform(x, [0, -50, -100], [0, 0.5, 1]);
+  const iconScale = useTransform(x, [-50, -100, -150], [0.8, 1.2, 1.5]);
+  const iconColor = useTransform(x, [-80, -100], ["#ffffff", "#ff0000"]); // White to Red
+  
+  // Track if threshold was crossed to trigger haptic once
+  const [crossedThreshold, setCrossedThreshold] = useState(false);
+
+  useEffect(() => {
+    const unsubscribe = x.on("change", (latest) => {
+      if (latest < deleteThreshold && !crossedThreshold) {
+        setCrossedThreshold(true);
+        if (navigator.vibrate) navigator.vibrate(15); // Light tick
+      } else if (latest >= deleteThreshold && crossedThreshold) {
+        setCrossedThreshold(false);
+      }
+    });
+    return () => unsubscribe();
+  }, [x, crossedThreshold]);
+
   const handleDragEnd = (_: any, info: PanInfo) => {
-    if (info.offset.x < -100) {
+    if (info.offset.x < deleteThreshold || info.velocity.x < -500) {
+      // Trigger delete with velocity or distance
       onDelete(record.id);
     } else {
-      // Reset position if not swiped far enough
-      // Framer Motion handles the spring back automatically via dragConstraints
+      // Reset is handled by dragConstraints
     }
   };
 
   return (
     <motion.div
+      layout // Enable layout animation for smooth list reordering
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+      exit={{ 
+        opacity: 0, 
+        height: 0, 
+        marginBottom: 0, 
+        x: -300, 
+        transition: { 
+          opacity: { duration: 0.2 },
+          x: { duration: 0.2 },
+          height: { duration: 0.3, delay: 0.1 },
+          marginBottom: { duration: 0.3, delay: 0.1 }
+        } 
+      }}
       transition={{ delay: index * 0.05 }}
       className="relative mb-3"
     >
       {/* Background Layer (Delete Action) */}
       <motion.div 
         style={{ opacity: bgOpacity }}
-        className="absolute inset-0 bg-destructive flex items-center justify-end px-6 "
+        className="absolute inset-0 bg-destructive flex items-center justify-end px-6 rounded-none"
       >
-        <Trash2 className="w-6 h-6 text-destructive-foreground" strokeWidth={2.5} />
+        <motion.div style={{ scale: iconScale, color: iconColor }}>
+          <Trash2 className="w-6 h-6 text-destructive-foreground" strokeWidth={2.5} />
+        </motion.div>
       </motion.div>
 
       {/* Foreground Layer (Content) */}
       <motion.div
-        style={{ x, opacity }}
+        style={{ x }}
         drag="x"
         dragConstraints={{ left: 0, right: 0 }}
-        dragElastic={{ left: 0.7, right: 0.1 }}
+        dragElastic={{ left: 0.5, right: 0.05 }} // Stiffer right resistance
         onDragEnd={handleDragEnd}
-        whileDrag={{ scale: 1.02, cursor: "grabbing", x: -20 }}
+        whileDrag={{ scale: 1.02, cursor: "grabbing" }}
+        whileTap={{ scale: 0.98 }}
         onClick={() => onEdit(record.id)}
-        className="relative neo-border bg-white dark:bg-black p-4 flex justify-between items-center  touch-pan-y cursor-pointer active:scale-[0.98] transition-transform"
+        className="relative neo-border bg-white dark:bg-black p-4 flex justify-between items-center touch-pan-y cursor-pointer select-none"
       >
-        <div className="flex flex-col gap-1 overflow-hidden pointer-events-none select-none">
+        <div className="flex flex-col gap-1 overflow-hidden pointer-events-none">
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-black tracking-tighter">
               {(() => {
@@ -153,9 +188,9 @@ export default function HistoryPage() {
     const newRecords = records.filter((r) => r.id !== id);
     setRecords(newRecords);
     localStorage.setItem("kaimono_records", JSON.stringify(newRecords));
-    // Haptic feedback if available
+    // Stronger haptic feedback on delete
     if (navigator.vibrate) {
-      navigator.vibrate(50);
+      navigator.vibrate([50, 30, 50]);
     }
   };
 
@@ -260,7 +295,7 @@ export default function HistoryPage() {
           )}
         </AnimatePresence>
 
-        <AnimatePresence>
+        <AnimatePresence mode="popLayout">
           {records.length === 0 ? (
             <motion.div 
               initial={{ opacity: 0 }}

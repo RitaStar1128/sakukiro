@@ -5,8 +5,40 @@ import fs from "node:fs";
 import path from "path";
 import { defineConfig } from "vite";
 import { vitePluginManusRuntime } from "vite-plugin-manus-runtime";
+import { VitePWA } from "vite-plugin-pwa";
 
-const plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime()];
+const plugins = [
+  react(),
+  tailwindcss(),
+  jsxLocPlugin(),
+  vitePluginManusRuntime(),
+  VitePWA({
+    registerType: "prompt",
+    devOptions: {
+      enabled: true,
+    },
+    manifest: {
+      name: "サクキロ (SAKUKIRO)",
+      short_name: "サクキロ",
+      description: "最速の支出管理・家計簿アプリ",
+      theme_color: "#ff5e00",
+      background_color: "#ffffff",
+      display: "standalone",
+      icons: [
+        {
+          src: "/pwa-192x192.png",
+          sizes: "192x192",
+          type: "image/png",
+        },
+        {
+          src: "/pwa-512x512.png",
+          sizes: "512x512",
+          type: "image/png",
+        },
+      ],
+    },
+  }),
+];
 
 export default defineConfig({
   plugins,

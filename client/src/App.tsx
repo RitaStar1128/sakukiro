@@ -1,4 +1,5 @@
 import { Toaster } from "@/components/ui/sonner";
+import { ReloadPrompt } from "@/components/ReloadPrompt";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
 import { Route, Switch } from "wouter";
@@ -39,6 +40,7 @@ function App() {
           <CurrencyProvider>
             <TooltipProvider>
               <Toaster position="bottom-center" toastOptions={{ style: { marginBottom: '4rem' } }} />
+              <ReloadPrompt />
               <Router />
             </TooltipProvider>
           </CurrencyProvider>

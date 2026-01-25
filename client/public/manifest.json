@@ -28,20 +28,5 @@
       "purpose": "maskable"
     }
   ],
-  "screenshots": [
-    {
-      "src": "/images/screenshot-mobile-1.png",
-      "sizes": "1080x1920",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "ホーム画面"
-    },
-    {
-      "src": "/images/screenshot-mobile-2.png",
-      "sizes": "1080x1920",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "履歴画面"
-    }
-  ]
+  "screenshots": []
 }

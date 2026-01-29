@@ -313,7 +313,7 @@ export default function Home() {
           ) : (
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 flex items-center justify-center border-2 border-black dark:border-white overflow-hidden">
-                <img src="/pwa-192x192.png" alt="SAKUKIRO Icon" className="w-full h-full object-cover" />
+                <img src="/icon-v2-192.png" alt="SAKUKIRO Icon" className="w-full h-full object-cover" />
               </div>
               <h1 className="text-lg font-black tracking-tighter uppercase">SAKUKIRO</h1>
             </div>

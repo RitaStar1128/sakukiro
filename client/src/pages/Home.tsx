@@ -208,6 +208,13 @@ export default function Home() {
     setAmount("");
   };
 
+  const handleNoteKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      e.currentTarget.blur();
+    }
+  };
+
   const handleDeleteRecord = () => {
     if (!params?.id) return;
     
@@ -444,7 +451,9 @@ export default function Home() {
                 <Input 
                 value={note} 
                 onChange={(e) => setNote(e.target.value)}
+                onKeyDown={handleNoteKeyDown}
                 placeholder={t("notePlaceholder")}
+                enterKeyHint="done"
                 className="w-full text-base font-bold px-3 py-0 border-2 border-black dark:border-white rounded-none shadow-none focus-visible:ring-0  transition-all bg-white dark:bg-black box-border"
                 style={{ height: '56px' }}
               />

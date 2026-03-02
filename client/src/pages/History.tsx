@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
 import { ArrowLeft, Trash2, Download, Edit2, ShoppingBag } from "lucide-react";
 import { toast } from "sonner";
-import { motion, AnimatePresence, useMotionValue, useTransform, PanInfo, useSpring } from "framer-motion";
+import { motion, AnimatePresence, useMotionValue, useTransform, PanInfo } from "framer-motion";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCurrency, CurrencyCode } from "@/contexts/CurrencyContext";
 import { ExportModal } from "@/components/ExportModal";
@@ -44,7 +44,6 @@ function HistoryItem({
 }) {
   // Motion values for swipe gesture
   const x = useMotionValue(0);
-  const dragX = useSpring(x, { stiffness: 500, damping: 30 }); // Add spring physics to drag
   
   // Dynamic transformations based on swipe distance
   const deleteThreshold = -100;

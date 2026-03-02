@@ -174,22 +174,29 @@ export default function Home() {
 
     // 数字入力の整形（先頭0の扱いを含む）
     setAmount((prev) => {
-      const [intPart = "", decimalPart] = prev.split(".");
+      const [intPart = "", decimalPart = undefined] = prev.split(".");
       const hasDecimal = decimalPart !== undefined;
 
       if (hasDecimal) {
-        if (decimalPart.length >= config.decimals) return prev;
-        return `${prev}${num}`;
+        const remaining = config.decimals - decimalPart.length;
+        if (remaining <= 0) return prev;
+        const append = num.slice(0, remaining);
+        return append ? `${prev}${append}` : prev;
+      }
+
+      if (!prev) {
+        return num === "00" ? "0" : num;
       }
 
       if (intPart === "0") {
-        if (num === "0") return prev; // 先頭の0は一つだけ残す
+        if (num === "0" || num === "00") return prev; // 先頭の0は一つだけ残す
         return num; // 非0の数字が来たら先頭0を置き換える
       }
 
-      if (intPart.length >= 9) return prev;
+      const remaining = 9 - intPart.length;
+      if (remaining <= 0) return prev;
 
-      return `${prev}${num}`;
+      return `${prev}${num.slice(0, remaining)}`;
     });
   };
 
@@ -199,6 +206,13 @@ export default function Home() {
 
   const handleClear = () => {
     setAmount("");
+  };
+
+  const handleNoteKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      e.currentTarget.blur();
+    }
   };
 
   const handleDeleteRecord = () => {
@@ -437,7 +451,9 @@ export default function Home() {
                 <Input 
                 value={note} 
                 onChange={(e) => setNote(e.target.value)}
+                onKeyDown={handleNoteKeyDown}
                 placeholder={t("notePlaceholder")}
+                enterKeyHint="done"
                 className="w-full text-base font-bold px-3 py-0 border-2 border-black dark:border-white rounded-none shadow-none focus-visible:ring-0  transition-all bg-white dark:bg-black box-border"
                 style={{ height: '56px' }}
               />
@@ -460,8 +476,14 @@ export default function Home() {
             ))}
             {/* Bottom Row: 0, ., Delete */}
             <button
+              onClick={() => handleNumClick("00")}
+              className="h-full w-full text-3xl font-black border-r-2 border-b-2 border-black dark:border-white active:bg-accent active:text-accent-foreground transition-colors flex items-center justify-center"
+            >
+              00
+            </button>
+            <button
               onClick={() => handleNumClick("0")}
-              className="col-span-2 h-full w-full text-3xl font-black border-r-2 border-b-2 border-black dark:border-white active:bg-accent active:text-accent-foreground transition-colors flex items-center justify-center"
+              className="h-full w-full text-3xl font-black border-r-2 border-b-2 border-black dark:border-white active:bg-accent active:text-accent-foreground transition-colors flex items-center justify-center"
             >
               0
             </button>

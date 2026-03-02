@@ -18,7 +18,7 @@ export interface PWAInstallPromptHandle {
 }
 
 export const PWAInstallPrompt = forwardRef<PWAInstallPromptHandle>((_, ref) => {
-  const { t, language } = useLanguage();
+  const { language } = useLanguage();
   const [isPWA, setIsPWA] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [showBanner, setShowBanner] = useState(false);

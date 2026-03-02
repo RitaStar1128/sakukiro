@@ -1,11 +1,9 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Settings, Check, X } from "lucide-react";
+import { Settings, Check, X, Sun, Moon, Monitor, Smartphone } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useCurrency, CurrencyCode } from "@/contexts/CurrencyContext";
+import { useCurrency } from "@/contexts/CurrencyContext";
 import { useTheme } from "@/contexts/ThemeContext";
-import { motion } from "framer-motion";
-import { Sun, Moon, Monitor, Smartphone } from "lucide-react";
 import { modalBodyClass, modalCloseButtonClass, modalContentClass, modalHeaderClass, modalIconBoxClass, modalTitleClass } from "@/components/modalStyles";
 
 export function SettingsModal() {

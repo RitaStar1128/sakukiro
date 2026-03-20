@@ -22,6 +22,29 @@ interface Record {
   note: string;
   date: string;
   currency?: CurrencyCode;
+  unitType?: "money" | "points";
+}
+
+const getRecordUnitType = (record: Record) =>
+  record.unitType === "points" ? "points" : "money";
+
+const getRecordUnitCode = (record: Record) =>
+  getRecordUnitType(record) === "points" ? "pt" : record.currency || "JPY";
+
+function formatRecordAmount(record: Record, availableCurrencies: any) {
+  if (getRecordUnitType(record) === "points") {
+    return `${record.amount.toLocaleString()} pt`;
+  }
+
+  const currencyCode = record.currency || "JPY";
+  const currencyConfig = availableCurrencies[currencyCode] || availableCurrencies["JPY"];
+
+  return new Intl.NumberFormat(undefined, {
+    style: "currency",
+    currency: currencyCode,
+    minimumFractionDigits: currencyConfig.decimals,
+    maximumFractionDigits: currencyConfig.decimals,
+  }).format(record.amount);
 }
 
 // Swipeable Item Component with Advanced Physics
@@ -120,17 +143,7 @@ function HistoryItem({
         <div className="flex flex-col gap-1 overflow-hidden pointer-events-none">
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-black tracking-tighter">
-              {(() => {
-                const currencyCode = record.currency || "JPY";
-                const currencyConfig = availableCurrencies[currencyCode] || availableCurrencies["JPY"];
-                
-                return new Intl.NumberFormat(undefined, {
-                  style: "currency",
-                  currency: currencyCode,
-                  minimumFractionDigits: currencyConfig.decimals,
-                  maximumFractionDigits: currencyConfig.decimals,
-                }).format(record.amount);
-              })()}
+              {formatRecordAmount(record, availableCurrencies)}
             </span>
             <span className="text-[10px] font-black uppercase bg-primary text-primary-foreground px-1.5 py-0.5 border border-black dark:border-white">
               {record.categoryKey ? t(record.categoryKey) : record.category}
@@ -202,16 +215,19 @@ export default function HistoryPage() {
   };
 
   const handleExportConfirm = () => {
-    const headers = ["Date", "Amount", "Currency", "Category", "Note"];
+    const headers = ["Date", "Amount", "Unit Type", "Unit", "Category", "Note"];
     const rows = records.map(record => {
       const date = new Date(record.date).toLocaleString();
       const category = record.categoryKey ? t(record.categoryKey) : record.category;
       const note = record.note ? `"${record.note.replace(/"/g, '""')}"` : "";
+      const unitType = getRecordUnitType(record);
+      const unitCode = getRecordUnitCode(record);
       
       return [
         date,
         record.amount,
-        record.currency || "JPY",
+        unitType,
+        unitCode,
         category,
         note
       ].join(",");

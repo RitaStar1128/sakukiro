@@ -18,6 +18,7 @@ const translations: Translations = {
   money: { ja: "お金", en: "MONEY" },
   points: { ja: "ポイント", en: "POINTS" },
   pointsDecimalTrimmed: { ja: "ポイント入力では小数を切り捨てます", en: "Points use whole numbers only" },
+  unitSwitchHint: { ja: "ここをタップで pt 切り替え", en: "Tap here to switch to pt" },
   confirm: { ja: "記録する", en: "CONFIRM" },
   history: { ja: "履歴", en: "HISTORY" },
   noRecords: { ja: "記録がありません", en: "NO RECORDS" },

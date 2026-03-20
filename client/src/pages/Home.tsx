@@ -41,6 +41,7 @@ const CATEGORY_KEYS = [
   "cat_medical",
   "cat_other"
 ];
+const POINTS_HINT_STORAGE_KEY = "kaimono_points_hint_seen";
 
 type EntryMode = "money" | "points";
 
@@ -69,6 +70,7 @@ export default function Home() {
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   const pwaPromptRef = useRef<PWAInstallPromptHandle>(null);
   const [isPWA, setIsPWA] = useState(false);
+  const [showPointsHint, setShowPointsHint] = useState(false);
 
   useEffect(() => {
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
@@ -102,6 +104,21 @@ export default function Home() {
       localStorage.setItem("has_visited_sakukiro", "true");
     }
   }, []);
+
+  useEffect(() => {
+    if (isEditMode || isHelpOpen) return;
+
+    const hasSeenPointsHint = localStorage.getItem(POINTS_HINT_STORAGE_KEY);
+    if (!hasSeenPointsHint) {
+      setShowPointsHint(true);
+      const timeoutId = window.setTimeout(() => {
+        setShowPointsHint(false);
+        localStorage.setItem(POINTS_HINT_STORAGE_KEY, "true");
+      }, 3000);
+
+      return () => window.clearTimeout(timeoutId);
+    }
+  }, [isEditMode, isHelpOpen]);
 
   useEffect(() => {
     document.title = isEditMode 
@@ -225,6 +242,11 @@ export default function Home() {
       const trimmedAmount = amount.split(".")[0] || "0";
       setAmount(trimmedAmount);
       toast(t("pointsDecimalTrimmed"));
+    }
+
+    if (showPointsHint) {
+      localStorage.setItem(POINTS_HINT_STORAGE_KEY, "true");
+      setShowPointsHint(false);
     }
 
     setEntryMode(nextMode);
@@ -478,6 +500,34 @@ export default function Home() {
                 )}
               </div>
             </motion.div>
+
+            <AnimatePresence>
+              {showPointsHint && !isHelpOpen && !isEditMode && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="absolute inset-0 z-10 pointer-events-none"
+                >
+                  <motion.div
+                    animate={{ scale: [1, 1.05, 1] }}
+                    transition={{ repeat: Infinity, duration: 1.2, ease: "easeInOut" }}
+                    className="absolute left-4 top-4 bottom-4 w-14 border-4 border-primary bg-primary/10"
+                  />
+                  <div className="absolute left-20 top-1/2 -translate-y-1/2">
+                    <div className="bg-black/85 text-white px-3 py-2 rounded-full font-bold text-xs flex items-center gap-2 shadow-lg whitespace-nowrap">
+                      <motion.div
+                        animate={{ x: [5, -5, 5] }}
+                        transition={{ repeat: Infinity, duration: 1.2, ease: "easeInOut" }}
+                      >
+                        ←
+                      </motion.div>
+                      {t("unitSwitchHint")}
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
           {/* Secondary Inputs - Compact Row */}

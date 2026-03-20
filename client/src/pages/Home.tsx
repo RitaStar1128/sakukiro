@@ -4,11 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useLocation, useRoute } from "wouter";
-import { History, ShoppingBag, Delete, Check, X, ArrowLeft, Trash2 } from "lucide-react";
+import { History, Delete, Check, X, ArrowLeft, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useCurrency } from "@/contexts/CurrencyContext";
+import { useCurrency, type CurrencyCode } from "@/contexts/CurrencyContext";
 import { SettingsModal } from "@/components/SettingsModal";
 import { PWAInstallPrompt, PWAInstallPromptHandle } from "@/components/PWAInstallPrompt";
 import { Smartphone } from "lucide-react";
@@ -42,10 +42,23 @@ const CATEGORY_KEYS = [
   "cat_other"
 ];
 
+type EntryMode = "money" | "points";
+
+interface ExpenseRecord {
+  id: string;
+  amount: number;
+  categoryKey?: string;
+  note: string;
+  date: string;
+  currency?: CurrencyCode;
+  unitType?: EntryMode;
+}
+
 export default function Home() {
   const { t } = useLanguage();
   const { currency, getSymbol, config } = useCurrency();
   const [amount, setAmount] = useState("");
+  const [entryMode, setEntryMode] = useState<EntryMode>("money");
   const [categoryKey, setCategoryKey] = useState(CATEGORY_KEYS[0]);
   const [note, setNote] = useState("");
   const [isSaved, setIsSaved] = useState(false);
@@ -69,6 +82,10 @@ export default function Home() {
   const spanRef = useRef<HTMLSpanElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [fontSize, setFontSize] = useState(72);
+  const activeDecimals = entryMode === "points" ? 0 : config.decimals;
+  const unitSymbol = entryMode === "points" ? "pt" : getSymbol();
+  const unitLabel = entryMode === "points" ? t("points") : t("money");
+  const unitSubLabel = entryMode === "points" ? t("points") : config.code;
   
   // 表示用のフォーマット済みテキストを計算
   const displayText = amount ? (() => {
@@ -97,13 +114,14 @@ export default function Home() {
     if (isEditMode && params?.id) {
       const storedData = localStorage.getItem("kaimono_records");
       if (storedData) {
-        const records = JSON.parse(storedData);
+        const records: ExpenseRecord[] = JSON.parse(storedData);
         const record = records.find((r: any) => r.id === params.id);
         if (record) {
           setAmount(record.amount.toString());
-          setCategoryKey(record.categoryKey);
+          setCategoryKey(record.categoryKey || CATEGORY_KEYS[0]);
           setNote(record.note || "");
           setOriginalDate(record.date);
+          setEntryMode(record.unitType === "points" ? "points" : "money");
         } else {
           toast.error("記録が見つかりません");
           setLocation("/history");
@@ -161,7 +179,7 @@ export default function Home() {
   const handleNumClick = (num: string) => {
     // 小数点入力の制御
     if (num === ".") {
-      if (config.decimals === 0) return;
+      if (activeDecimals === 0) return;
       if (!amount) {
         setAmount("0.");
         return;
@@ -178,7 +196,7 @@ export default function Home() {
       const hasDecimal = decimalPart !== undefined;
 
       if (hasDecimal) {
-        const remaining = config.decimals - decimalPart.length;
+        const remaining = activeDecimals - decimalPart.length;
         if (remaining <= 0) return prev;
         const append = num.slice(0, remaining);
         return append ? `${prev}${append}` : prev;
@@ -198,6 +216,18 @@ export default function Home() {
 
       return `${prev}${num.slice(0, remaining)}`;
     });
+  };
+
+  const toggleEntryMode = () => {
+    const nextMode = entryMode === "money" ? "points" : "money";
+
+    if (nextMode === "points" && amount.includes(".")) {
+      const trimmedAmount = amount.split(".")[0] || "0";
+      setAmount(trimmedAmount);
+      toast(t("pointsDecimalTrimmed"));
+    }
+
+    setEntryMode(nextMode);
   };
 
   const handleDelete = () => {
@@ -220,7 +250,7 @@ export default function Home() {
     
     const storedData = localStorage.getItem("kaimono_records");
     if (storedData) {
-      const records = JSON.parse(storedData);
+      const records: ExpenseRecord[] = JSON.parse(storedData);
       const newRecords = records.filter((r: any) => r.id !== params.id);
       localStorage.setItem("kaimono_records", JSON.stringify(newRecords));
       // toast.success("記録を削除しました");
@@ -240,20 +270,29 @@ export default function Home() {
     }
 
     const storedData = localStorage.getItem("kaimono_records");
-    let records = storedData ? JSON.parse(storedData) : [];
+    let records: ExpenseRecord[] = storedData ? JSON.parse(storedData) : [];
 
     if (isEditMode && params?.id) {
       // 更新処理
-      records = records.map((r: any) => {
+      records = records.map((r) => {
         if (r.id === params.id) {
-          return {
+          const nextRecord: ExpenseRecord = {
             ...r,
             amount: parseFloat(amount),
             categoryKey,
             note,
             // 日付は変更しない（必要なら編集可能にするが、今回は新規入力画面ベースなので維持）
             date: originalDate || r.date,
+            unitType: entryMode,
           };
+
+          if (entryMode === "money") {
+            nextRecord.currency = config.code;
+          } else {
+            delete nextRecord.currency;
+          }
+
+          return nextRecord;
         }
         return r;
       });
@@ -263,14 +302,18 @@ export default function Home() {
       setLocation("/history");
     } else {
       // 新規作成処理
-      const newRecord = {
+      const newRecord: ExpenseRecord = {
         id: crypto.randomUUID(),
         amount: parseFloat(amount),
         categoryKey, // 翻訳済み文字列ではなくキーを保存する
         note,
         date: new Date().toISOString(),
-        currency: config.code, // 記録時の通貨を保存
+        unitType: entryMode,
       };
+
+      if (entryMode === "money") {
+        newRecord.currency = config.code; // 記録時の通貨を保存
+      }
       
       localStorage.setItem("kaimono_records", JSON.stringify([newRecord, ...records]));
 
@@ -395,11 +438,22 @@ export default function Home() {
               animate={{ scale: 1 }}
               className="neo-input h-24 flex items-center bg-white dark:bg-black transition-all  px-4 py-0 relative gap-2"
             >
-              {/* Currency Info - Fixed Width Area */}
-              <div className="flex flex-col items-center justify-center w-12 shrink-0 pointer-events-none select-none">
-                <span className="text-3xl font-bold text-muted-foreground leading-none">{getSymbol()}</span>
-                <span className="text-[9px] font-black text-muted-foreground/50 tracking-widest mt-0.5">{config.code}</span>
-              </div>
+              {/* Unit Info - Tappable to switch between money and points */}
+              <button
+                type="button"
+                onClick={toggleEntryMode}
+                className="flex flex-col items-center justify-center w-14 shrink-0 select-none rounded-none px-1 py-2 text-muted-foreground transition-colors hover:bg-muted/20 active:bg-muted/30"
+                aria-label={`${t("unit")}: ${unitLabel}`}
+              >
+                <span
+                  className={`font-bold leading-none ${entryMode === "points" ? "text-2xl uppercase" : "text-3xl"}`}
+                >
+                  {unitSymbol}
+                </span>
+                <span className="mt-0.5 text-[8px] font-black uppercase tracking-widest text-muted-foreground/50">
+                  {unitSubLabel}
+                </span>
+              </button>
 
               {/* Amount - Flexible Area with Auto-Scaling Font */}
               <div ref={containerRef} className="flex-1 flex items-center justify-end min-w-0 overflow-hidden h-full">
@@ -474,7 +528,7 @@ export default function Home() {
                 {num}
               </button>
             ))}
-            {/* Bottom Row: 0, ., Delete */}
+            {/* Bottom Row: 00, 0, . */}
             <button
               onClick={() => handleNumClick("00")}
               className="h-full w-full text-3xl font-black border-r-2 border-b-2 border-black dark:border-white active:bg-accent active:text-accent-foreground transition-colors flex items-center justify-center"
@@ -489,7 +543,11 @@ export default function Home() {
             </button>
             <button
               onClick={() => handleNumClick(".")}
-              className="h-full w-full text-3xl font-black border-r-2 border-b-2 border-black dark:border-white active:bg-accent active:text-accent-foreground transition-colors flex items-center justify-center pb-2"
+              className={`h-full w-full text-3xl font-black border-r-2 border-b-2 border-black dark:border-white transition-colors flex items-center justify-center pb-2 ${
+                activeDecimals === 0
+                  ? "cursor-not-allowed text-muted-foreground/25"
+                  : "active:bg-accent active:text-accent-foreground"
+              }`}
             >
               .
             </button>

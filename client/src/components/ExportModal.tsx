@@ -58,12 +58,12 @@ export function ExportModal({ isOpen, onClose, onConfirm }: ExportModalProps) {
                 {language === 'ja' ? 'データ構造' : 'Data Structure'}
               </h4>
               <div className="bg-black dark:bg-white text-white dark:text-black p-3 font-mono text-xs overflow-x-auto border-2 border-black dark:border-white">
-                id, date, amount, category, note
+                date, amount, unit_type, unit, category, note
               </div>
               <p className="text-xs font-bold text-muted-foreground">
                 {language === 'ja'
-                  ? '※ 日付は YYYY-MM-DD 形式で出力されます。'
-                  : '* Dates are formatted as YYYY-MM-DD.'}
+                  ? '※ 通貨入力は JPY など、ポイント入力は pt として出力されます。'
+                  : '* Money exports use currency codes like JPY, points exports use pt.'}
               </p>
             </div>
 
